@@ -4,6 +4,7 @@ import cv2
 from utilities.geometry import Point, Rectangle
 import time
 
+
 # --- Paths to Image folders ---
 __PATH = Path(__file__).parent
 IMAGES = __PATH

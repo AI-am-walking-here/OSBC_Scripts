@@ -11,6 +11,8 @@ from model.osrs.osrs_bot import OSRSBot
 from utilities.api.morg_http_client import MorgHTTPSocket
 from utilities.api.status_socket import StatusSocket
 
+# TEXT_RED = Color([239,16,32])
+
 
 class Gotr(OSRSBot, launcher.Launchable):
     def __init__(self):
@@ -18,7 +20,7 @@ class Gotr(OSRSBot, launcher.Launchable):
         description = "This bot runs Guardians of the Rift"
         super().__init__(bot_title=bot_title, description=description)
         # Set option variables below (initial value is only used during headless testing)
-        self.running_time = 1
+        self.running_time = 10
         self.take_breaks = False
         self.game_focus = "Even Points"
         self.repair_now = False
@@ -77,11 +79,12 @@ class Gotr(OSRSBot, launcher.Launchable):
         end_time = self.running_time * 60
         while time.time() - start_time < end_time:
             # ------ Perform bot actions here ------
-            self.repair_pouches()
+            self.wait_for_portal()
+            self.climb_rubble()
 
 
 
-            time.sleep(10)  #so no infinate loops for testing
+            time.sleep(1)  #so no infinate loops for testing
             self.update_progress((time.time() - start_time) / end_time)
         
         
@@ -92,11 +95,13 @@ class Gotr(OSRSBot, launcher.Launchable):
 
 
     def open_inv(self):
+        #Clicks the inv icon
         self.log_msg("Opening Inventory...")
         self.mouse.move_to(self.win.cp_tabs[3].random_point(), mouseSpeed=self.mouse_speed)
         self.mouse.click()
     
     def open_magic_book(self):
+        #Clicks the magic book icon
         self.log_msg("Opening Magic Book...")
         self.mouse.move_to(self.win.cp_tabs[6].random_point(), mouseSpeed=self.mouse_speed)
         self.mouse.click()
@@ -158,24 +163,63 @@ class Gotr(OSRSBot, launcher.Launchable):
         pyautogui.keyUp('space')
         self.open_inv() #Opens inv at the end to reset
 
-#go to the rifters
+    def mine_guardians(self):
+        guardians = self.get_nearest_tag(clr.PINK)
+        self.mouse.move_to(guardians.random_point(), mouseSpeed=self.mouse_speed)
+        self.mouse.click()        
 
-#Get Pngs for all picks/outfits/inv
-#got to bank
-    #deposit all inv/worn
-    #find items in bank
-    #pull out close bank
-    #wear items
-#wait for entry
-# go in wait for mining
-    #click rocks once to see if avaliable to mine
-    #mine
-# mine until first portal
-#mine shards
-    #make runes
-    #depo
-#craft shards
-    #make runes
-    #depo
-#wait for portal
-    #repeat until finished
+    def climb_rubble(self):
+        rubble = self.get_nearest_tag(clr.BLUE)
+        self.mouse.move_to(rubble.random_point(), mouseSpeed=self.mouse_speed)
+        self.mouse.click()
+
+    def work_at_bench(self):
+        bench = self.get_nearest_tag(clr.WHITE)
+        self.mouse.move_to(bench.random_point(), mouseSpeed=self.mouse_speed)
+        self.mouse.click()
+
+    def deposit_runes(self):
+        bench = self.get_nearest_tag(clr.PURPLE)
+        self.mouse.move_to(bench.random_point(), mouseSpeed=self.mouse_speed)
+        self.mouse.click()
+
+    def click_portal(self):
+        #Clicks the Guardian portal, and exit portal at alters
+        portal = self.get_nearest_tag(clr.CYAN)
+        self.mouse.move_to(portal.random_point(), mouseSpeed=self.mouse_speed)
+        self.mouse.click()
+
+    def click_alter(self):
+        #Clicks the Guardian portal, and exit portal at alters
+        alter = self.get_nearest_tag(clr.YELLOW)
+        self.mouse.move_to(alter.random_point(), mouseSpeed=self.mouse_speed)
+        self.mouse.click()
+
+    def wait_for_portal(self):
+        #Searches the screen waiting for a portal to appear
+        portal_image = imsearch.BOT_IMAGES.joinpath("gotr_images", "gotr_portal.png")
+        portal = imsearch.search_img_in_rect(portal_image, self.win.game_view)
+        while not portal:
+            time.sleep(random.randint(1000,2000)/1000) #Wait 1-2 seconds to retry looking for portal
+            portal = imsearch.search_img_in_rect(portal_image, self.win.game_view)
+        self.log_msg("Portal Apeared...")
+        
+
+
+    #games starts
+        #mine mine_guardians()
+        #wait portal wait_for_portal()
+        #climb climb_rubble()
+        #navagate to portal
+        #portal
+            #mine ess mine_guardians()
+            #runes
+            #craft #click alter #TODO needs a click rune pouch sytem
+            #runes
+        #repeat
+
+
+
+
+#make sure alters are all tagged
+#look into async for active alters

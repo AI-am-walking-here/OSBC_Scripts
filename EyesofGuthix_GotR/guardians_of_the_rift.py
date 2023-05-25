@@ -5,6 +5,7 @@ import utilities.game_launcher as launcher    # |Allows for custom profile launc
 import pathlib                                # |
 import utilities.api.item_ids as ids
 import utilities.color as clr
+import utilities.ocr as ocr
 import utilities.random_util as rd
 import model.osrs.EyesofGuthix_GotR.BotSpecImageSearch as imsearch
 from model.osrs.osrs_bot import OSRSBot
@@ -79,12 +80,19 @@ class Gotr(OSRSBot, launcher.Launchable):
         end_time = self.running_time * 60
         while time.time() - start_time < end_time:
             # ------ Perform bot actions here ------
-            self.wait_for_portal()
-            self.climb_rubble()
+            alter = self.get_nearest_tag(clr.RED)
+            self.mouse.move_to(alter.random_point(), mouseSpeed=self.mouse_speed)
+            self.mouse.click()
+            # self.camera_setup()
+            # self.chatbox_text("active!", clr.TEXT_RED)
+            # self.mine_guardians()
+            # self.wait_for_portal()
+            # self.climb_rubble()
+            
 
 
 
-            time.sleep(1)  #so no infinate loops for testing
+            time.sleep(100)  #so no infinate loops for testing
             self.update_progress((time.time() - start_time) / end_time)
         
         
@@ -199,14 +207,30 @@ class Gotr(OSRSBot, launcher.Launchable):
         #Searches the screen waiting for a portal to appear
         portal_image = imsearch.BOT_IMAGES.joinpath("gotr_images", "gotr_portal.png")
         portal = imsearch.search_img_in_rect(portal_image, self.win.game_view)
+        check_counter = 0
         while not portal:
-            time.sleep(random.randint(1000,2000)/1000) #Wait 1-2 seconds to retry looking for portal
+            check_counter += 1    #Adds an internal counter to check for portal
+            if check_counter % 10 == 0:    #After 10 checks it'll log a message checking for portal 
+                self.log_msg("Checking for portal x " + str(check_counter // 5))
+            time.sleep(random.randint(1000,2000)/1000)    #Wait 1-2 seconds to retry looking for portal
             portal = imsearch.search_img_in_rect(portal_image, self.win.game_view)
         self.log_msg("Portal Apeared...")
-        
+    
+    def is_rift_active(self):
+        #checks to see if rift active and will return True or False
+        self.chatbox_textself.chatbox_text("active!", clr.TEXT_RED)
+    
+    def is_guardian_defeated(self):
+        #checks to see if guardian defeated and will return True or False
+        self.chatbox_textself.chatbox_text("defeated!", clr.TEXT_RED)
 
-
-    #games starts
+    def camera_setup(self):
+        #Sets camera facing east, then move to a bird eyes view
+        self.set_compass_east()
+        pyautogui.keyDown('up')
+        time.sleep(random.randint(1010,1300)/1000)
+        pyautogui.keyUp('up')
+    #games starts 
         #mine mine_guardians()
         #wait portal wait_for_portal()
         #climb climb_rubble()
@@ -223,3 +247,9 @@ class Gotr(OSRSBot, launcher.Launchable):
 
 #make sure alters are all tagged
 #look into async for active alters
+
+#changed chatbox_text() in bot.py
+#changed COLORS in color.py to add TEXT colors
+#check modules before distribution
+#make sure plugins work
+#Colors work with atleast a 30pt difference possible movement

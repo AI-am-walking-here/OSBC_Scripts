@@ -1,6 +1,7 @@
 import model.osrs.AI_GOTR.BotSpecImageSearch as imsearch
 import time
-
+import random
+import numpy as np
 import utilities.api.item_ids as ids
 import utilities.color as clr
 import utilities.random_util as rd
@@ -9,13 +10,14 @@ from utilities.api.morg_http_client import MorgHTTPSocket
 from utilities.api.status_socket import StatusSocket
 
 
-class SandstoneMiner(OSRSBot, launcher.Launchable):
+class SandstoneMiner(OSRSBot):
     def __init__(self):
         bot_title = "AI Sandstone"
         description = "Mines and deposits Sandstone"
         super().__init__(bot_title=bot_title, description=description)
         # Set option variables below (initial value is only used during headless testing)
-        self.running_time = 1
+        self.running_time = 60
+        self.mouse_speed = "fastest"
 
     def create_options(self):
         """
@@ -58,12 +60,22 @@ class SandstoneMiner(OSRSBot, launcher.Launchable):
         # Setup APIs
         # api_m = MorgHTTPSocket()
         # api_s = StatusSocket()
+        self.items = 0
+        self.open_inventory()
 
         # Main loop
         start_time = time.time()
         end_time = self.running_time * 60
         while time.time() - start_time < end_time:
             # -- Perform bot actions here --
+           
+            for i in range(28):
+                self.log_msg(f"Mining x{i+1}")
+                self.mine_sandstone()
+                self.action_complete(i)
+            self.deposit_sandstone()
+            time.sleep(random.randint(1500,2000)/1000) #deposits too fast and ties to click rock while moving causing a miss click
+           
             # Code within this block will LOOP until the bot is stopped.
 
             self.update_progress((time.time() - start_time) / end_time)
@@ -81,17 +93,39 @@ class SandstoneMiner(OSRSBot, launcher.Launchable):
         self.mouse.click()
 
     def mine_sandstone(self):
-        #mines tagged sandstone
+        #mines tagged sandstone and stops when 
+        self.log_msg("mining...")
         sandstone = self.get_nearest_tag(clr.CYAN)
         self.mouse.move_to(sandstone.random_point(), mouseSpeed=self.mouse_speed)
         self.mouse.click()
 
     def deposit_sandstone(self):
         #clicks to deposit at grinder
+        self.log_msg("depo...")
         grinder = self.get_nearest_tag(clr.YELLOW)
         self.mouse.move_to(grinder.random_point(), mouseSpeed=self.mouse_speed)
         self.mouse.click()
+        inventory_1 = self.win.inventory_slots[27].screenshot()
+        inventory_2 = self.win.inventory_slots[27].screenshot()
+        while np.array_equal(inventory_1, inventory_2):
+            inventory_2 = self.win.inventory_slots[27].screenshot()    
+        else:
+            print("action grinder finished")
+            self.items = 0
+            return self.items
+
+
     
-    def action_complete(self):
-        #checks inventory snapshot to see for change
-        
+    def action_complete(self,n):
+        inventory_1 = self.win.inventory_slots[n].screenshot()
+        inventory_2 = self.win.inventory_slots[n].screenshot()
+        while np.array_equal(inventory_1, inventory_2):
+            inventory_2 = self.win.inventory_slots[n].screenshot()    
+        else:
+            print("action finished")
+            self.items += 1
+            return self.items
+
+
+
+

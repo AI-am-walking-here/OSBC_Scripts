@@ -1,8 +1,9 @@
-import model.osrs.AI_GOTR.BotSpecImageSearch as imsearch
+import model.osrs.AI_Sandstone.BotSpecImageSearch as imsearch
 import time
 import random
 import pyautogui
 import numpy as np
+import utilities.ocr as ocr
 import utilities.api.item_ids as ids
 import utilities.color as clr
 import utilities.random_util as rd
@@ -61,9 +62,11 @@ class SandstoneMiner(OSRSBot):
         # Setup APIs
         # api_m = MorgHTTPSocket()
         # api_s = StatusSocket()
-        self.items = 0
+        self.rocks_mined = 0
+        self.buckets_of_sand = 0
         self.last_inv_slot = self.win.inventory_slots[27].screenshot()
-        self.is_inv_full()
+        self.total_xp = ocr.extract_text(self.win.total_xp, ocr.PLAIN_12, [clr.WHITE]) 
+        self.xclicked = 0
 
         # self.open_inventory()
 
@@ -72,10 +75,10 @@ class SandstoneMiner(OSRSBot):
         end_time = self.running_time * 60
         while time.time() - start_time < end_time:
             # -- Perform bot actions here --
-
-
-
-
+            self.mine_sandstone()
+            self.check_redx()
+            self.total_xp_change()
+            
 
 
 
@@ -98,12 +101,47 @@ class SandstoneMiner(OSRSBot):
         self.mouse.move_to(self.win.cp_tabs[3].random_point(), mouseSpeed=self.mouse_speed)
         self.mouse.click()
 
+    def camera_setup(self):        
+        #Sets camera facing east, then move to a bird eyes view
+        self.set_compass_south()
+        pyautogui.keyDown('up')
+        time.sleep(random.randint(1010,1300)/1000)
+        pyautogui.keyUp('up')
+        #need zoom out
+
+    def total_xp_change(self):
+        #Extracts total xp as a string, loops untill change then updates new total xp
+        new_total_xp = ocr.extract_text(self.win.total_xp, ocr.PLAIN_12, [clr.WHITE])        
+        while new_total_xp == self.total_xp:
+            new_total_xp = ocr.extract_text(self.win.total_xp, ocr.PLAIN_12, [clr.WHITE])
+            pass
+        else:            
+            self.rocks_mined += 1
+            self.log_msg(f"You've mined {self.rocks_mined} rocks!")
+            self.total_xp = ocr.extract_text(self.win.total_xp, ocr.PLAIN_12, [clr.WHITE])
+            return self.total_xp
+        
+    def check_redx(self):
+        redx_1 = imsearch.BOT_IMAGES.joinpath("sandstone_images", "click_red_1.png")
+        redx_2 = imsearch.BOT_IMAGES.joinpath("sandstone_images", "click_red_2.png")
+        redx_3 = imsearch.BOT_IMAGES.joinpath("sandstone_images", "click_red_3.png")
+        redx_4 = imsearch.BOT_IMAGES.joinpath("sandstone_images", "click_red_4.png")
+        red_clicked1 = imsearch.search_img_in_rect(redx_1, self.win.game_view)
+        red_clicked2 = imsearch.search_img_in_rect(redx_2, self.win.game_view)
+        red_clicked3 = imsearch.search_img_in_rect(redx_3, self.win.game_view)
+        red_clicked4 = imsearch.search_img_in_rect(redx_4, self.win.game_view)
+        
+        if red_clicked1 or red_clicked2 or red_clicked3 or red_clicked4 is True:
+            print('clicked')
+            self.xclicked += 1
+
     def mine_sandstone(self):
         #mines tagged sandstone and stops when 
         # self.log_msg("mining...")
         sandstone = self.get_nearest_tag(clr.CYAN)
         self.mouse.move_to(sandstone.random_point(), mouseSpeed=self.mouse_speed)
         self.mouse.click()
+        
 
     def deposit_sandstone(self):
         #clicks to deposit at grinder
@@ -119,30 +157,16 @@ class SandstoneMiner(OSRSBot):
             print("action grinder finished")
             self.items = 0
             return self.items
+        #time.sleep(random.randint(1500, 2000) / 1000) need this to not over run the grinder
  
-    def mining_complete(self, n):
-        start_time = time.time()
-        inventory_1 = self.win.inventory_slots[n].screenshot()
-        inventory_2 = self.win.inventory_slots[n].screenshot()
+
         
-        while True:
-            if not np.array_equal(inventory_1, inventory_2):
-                break
-            
-            if time.time() - start_time >= 5:
-                new_time = time.time() - start_time
-                print("had to click mining again")
-                self.mine_sandstone()
-                self.mining_complete(n)
-                return
-            inventory_2 = self.win.inventory_slots[n].screenshot()
 
     def check_last_inv(self):
         # Takes the screenshot at the beginning of the bot and compares it to the current screenshot to determine the full inventory
         self.new_last_inv = self.win.inventory_slots[27].screenshot()
         while True:
             if np.array_equal(self.new_last_inv, self.last_inv_slot):
-                print("last inv is equal")
                 break
             else:
                 print("tryna depo")
@@ -150,30 +174,16 @@ class SandstoneMiner(OSRSBot):
                 time.sleep(random.randint(1500, 2000) / 1000)
                 self.new_last_inv = self.win.inventory_slots[27].screenshot()
 
-    def camera_setup(self):
-        #Sets camera facing east, then move to a bird eyes view
-        self.set_compass_south()
-        pyautogui.keyDown('up')
-        time.sleep(random.randint(1010,1300)/1000)
-        pyautogui.keyUp('up')
-        #need zoom out
 
-    def is_inv_full(self):
-        """
-        Checks if inventory is full.
-        Returns: bool
-        """
-        for i in range(27):            
-            slot_img = imsearch.BOT_IMAGES.joinpath("sandstone_images", "emptyslot.png")
-            compare = imsearch.search_img_in_rect(slot_img,self.win.inventory_slots[i])
-            while not compare:
-                print(f"slot in {i+1}")
-            
+    def box_at_mouse(self):
+        mouse_x, mouse_y = pyautogui.position()
+        print("Mouse coordinates: x =", mouse_x, "y =", mouse_y)
+    
         
             
 
     
-
+#check for xp change doesnt always work incase someone steals your sandstone
 #geods
 #sometime it doesnt see rocks with one error
 #has to mine again at 28

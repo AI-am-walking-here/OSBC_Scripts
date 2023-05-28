@@ -66,7 +66,7 @@ class SandstoneMiner(OSRSBot):
         self.buckets_of_sand = 0
         self.last_inv_slot = self.win.inventory_slots[27].screenshot()
         self.total_xp = ocr.extract_text(self.win.total_xp, ocr.PLAIN_12, [clr.WHITE]) 
-        self.xclicked = 0
+        
 
         # self.open_inventory()
 
@@ -74,11 +74,9 @@ class SandstoneMiner(OSRSBot):
         start_time = time.time()
         end_time = self.running_time * 60
         while time.time() - start_time < end_time:
-            # -- Perform bot actions here --
-            self.mine_sandstone()
-            self.check_redx()
-            self.total_xp_change()
-            
+            #### ----- Perform bot actions here ----- ###
+            self.mining_loop()
+            self.check_last_inv()
 
 
 
@@ -126,14 +124,16 @@ class SandstoneMiner(OSRSBot):
         redx_2 = imsearch.BOT_IMAGES.joinpath("sandstone_images", "click_red_2.png")
         redx_3 = imsearch.BOT_IMAGES.joinpath("sandstone_images", "click_red_3.png")
         redx_4 = imsearch.BOT_IMAGES.joinpath("sandstone_images", "click_red_4.png")
-        red_clicked1 = imsearch.search_img_in_rect(redx_1, self.win.game_view)
-        red_clicked2 = imsearch.search_img_in_rect(redx_2, self.win.game_view)
-        red_clicked3 = imsearch.search_img_in_rect(redx_3, self.win.game_view)
-        red_clicked4 = imsearch.search_img_in_rect(redx_4, self.win.game_view)
+        red_clicked1 = imsearch.search_img_in_rect(redx_1, self.win.game_view,)
+        red_clicked2 = imsearch.search_img_in_rect(redx_2, self.win.game_view,)
+        red_clicked3 = imsearch.search_img_in_rect(redx_3, self.win.game_view,)
+        red_clicked4 = imsearch.search_img_in_rect(redx_4, self.win.game_view,)
         
         if red_clicked1 or red_clicked2 or red_clicked3 or red_clicked4 is True:
             print('clicked')
-            self.xclicked += 1
+            return True
+
+        
 
     def mine_sandstone(self):
         #mines tagged sandstone and stops when 
@@ -156,11 +156,18 @@ class SandstoneMiner(OSRSBot):
         else:
             print("action grinder finished")
             self.items = 0
+            time.sleep(random.randint(1500, 2000) / 1000)
             return self.items
-        #time.sleep(random.randint(1500, 2000) / 1000) need this to not over run the grinder
  
-
-        
+    def mining_loop(self):
+        self.mine_sandstone()        
+        red_x_detected = self.check_redx()
+        time.sleep(0.1)
+        if red_x_detected is True:
+            self.total_xp_change()
+        else:
+            self.mining_loop() 
+            
 
     def check_last_inv(self):
         # Takes the screenshot at the beginning of the bot and compares it to the current screenshot to determine the full inventory
@@ -170,8 +177,7 @@ class SandstoneMiner(OSRSBot):
                 break
             else:
                 print("tryna depo")
-                self.deposit_sandstone()
-                time.sleep(random.randint(1500, 2000) / 1000)
+                self.deposit_sandstone()                
                 self.new_last_inv = self.win.inventory_slots[27].screenshot()
 
 

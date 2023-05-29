@@ -132,31 +132,41 @@ class SandstoneMiner(OSRSBot):
         if red_clicked1 or red_clicked2 or red_clicked3 or red_clicked4 is True:
             print('clicked')
             return True
+       
 
-        
 
+    
     def mine_sandstone(self):
-        #mines tagged sandstone and stops when 
-        # self.log_msg("mining...")
-        sandstone = self.get_nearest_tag(clr.CYAN)
-        self.mouse.move_to(sandstone.random_point(), mouseSpeed=self.mouse_speed)
-        self.mouse.click()
+        # Mines tagged sandstone and stops when 
+        self.log_msg("mining...")
+        sandstone = self.get_nearest_tag(clr.CYAN)    
+        try:
+            self.mouse.move_to(sandstone.random_point(), mouseSpeed=self.mouse_speed)
+            self.mouse.click()
+        except AttributeError:
+            self.log_msg("AttributeError occurred. Retrying mine_sandstone...")
+            return self.mine_sandstone()  
+
         
 
     def deposit_sandstone(self):
         #clicks to deposit at grinder
         self.log_msg("depo...")
         grinder = self.get_nearest_tag(clr.YELLOW)
-        self.mouse.move_to(grinder.random_point(), mouseSpeed=self.mouse_speed)
-        self.mouse.click()
         inventory_1 = self.win.inventory_slots[27].screenshot()
         inventory_2 = self.win.inventory_slots[27].screenshot()
+        try:
+            self.mouse.move_to(grinder.random_point(), mouseSpeed=self.mouse_speed)
+            self.mouse.click()
+        except AttributeError:
+            return self.deposit_sandstone()
+        
         while np.array_equal(inventory_1, inventory_2):
             inventory_2 = self.win.inventory_slots[27].screenshot()    
         else:
             print("action grinder finished")
+            time.sleep(random.randint(1500, 2000) / 1000)            
             self.items = 0
-            time.sleep(random.randint(1500, 2000) / 1000)
             return self.items
  
     def mining_loop(self):

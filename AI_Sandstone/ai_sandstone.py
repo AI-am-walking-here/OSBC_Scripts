@@ -75,7 +75,8 @@ class SandstoneMiner(OSRSBot):
         end_time = self.running_time * 60
         while time.time() - start_time < end_time:
             #### ----- Perform bot actions here ----- ###
-            self.mining_loop()
+            self.mine_sandstone()
+            self.total_xp_change()
             self.check_last_inv()
 
 
@@ -118,23 +119,6 @@ class SandstoneMiner(OSRSBot):
             self.log_msg(f"You've mined {self.rocks_mined} rocks!")
             self.total_xp = ocr.extract_text(self.win.total_xp, ocr.PLAIN_12, [clr.WHITE])
             return self.total_xp
-        
-    def check_redx(self):
-        redx_1 = imsearch.BOT_IMAGES.joinpath("sandstone_images", "click_red_1.png")
-        redx_2 = imsearch.BOT_IMAGES.joinpath("sandstone_images", "click_red_2.png")
-        redx_3 = imsearch.BOT_IMAGES.joinpath("sandstone_images", "click_red_3.png")
-        redx_4 = imsearch.BOT_IMAGES.joinpath("sandstone_images", "click_red_4.png")
-        red_clicked1 = imsearch.search_img_in_rect(redx_1, self.win.game_view,)
-        red_clicked2 = imsearch.search_img_in_rect(redx_2, self.win.game_view,)
-        red_clicked3 = imsearch.search_img_in_rect(redx_3, self.win.game_view,)
-        red_clicked4 = imsearch.search_img_in_rect(redx_4, self.win.game_view,)
-        
-        if red_clicked1 or red_clicked2 or red_clicked3 or red_clicked4 is True:
-            print('clicked')
-            return True
-       
-
-
     
     def mine_sandstone(self):
         # Mines tagged sandstone and stops when 
@@ -142,10 +126,13 @@ class SandstoneMiner(OSRSBot):
         sandstone = self.get_nearest_tag(clr.CYAN)    
         try:
             self.mouse.move_to(sandstone.random_point(), mouseSpeed=self.mouse_speed)
-            self.mouse.click()
+            click_result = self.mouse.click(check_red_click=True)
+            if not click_result:
+                self.mine_sandstone()
         except AttributeError:
             self.log_msg("AttributeError occurred. Retrying mine_sandstone...")
-            return self.mine_sandstone()  
+            time.sleep(1)
+            return self.mine_sandstone()
 
         
 
@@ -157,7 +144,7 @@ class SandstoneMiner(OSRSBot):
         inventory_2 = self.win.inventory_slots[27].screenshot()
         try:
             self.mouse.move_to(grinder.random_point(), mouseSpeed=self.mouse_speed)
-            self.mouse.click()
+            self.mouse.click(check_red_click=True)
         except AttributeError:
             return self.deposit_sandstone()
         
@@ -169,14 +156,8 @@ class SandstoneMiner(OSRSBot):
             self.items = 0
             return self.items
  
-    def mining_loop(self):
-        self.mine_sandstone()        
-        red_x_detected = self.check_redx()
-        time.sleep(0.1)
-        if red_x_detected is True:
-            self.total_xp_change()
-        else:
-            self.mining_loop() 
+
+            
             
 
     def check_last_inv(self):

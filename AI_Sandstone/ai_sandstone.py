@@ -18,20 +18,20 @@ class SandstoneMiner(OSRSBot):
         description = "Mines and deposits Sandstone"
         super().__init__(bot_title=bot_title, description=description)
         # Set option variables below (initial value is only used during headless testing)
-        self.running_time = 60
+        self.rocks_mined = 0
+        self.gained_xp = 0
+        self.one_kg = 0
+        self.two_kg = 0
+        self.five_kg = 0
+        self.ten_kg = 0
+        self.buckets_of_sand = 0        
+        self.running_time = 180
         self.mouse_speed = "fastest"
 
     def create_options(self):
-        """
-        Use the OptionsBuilder to define the options for the bot. For each function call below,
-        we define the type of option we want to create, its key, a label for the option that the user will
-        see, and the possible values the user can select. The key is used in the save_options function to
-        unpack the dictionary of options after the user has selected them.
-        """
-        self.options_builder.add_slider_option("running_time", "How long to run (minutes)?", 1, 500)
-        self.options_builder.add_text_edit_option("text_edit_example", "Text Edit Example", "Placeholder text here")
-        self.options_builder.add_checkbox_option("multi_select_example", "Multi-select Example", ["A", "B", "C"])
-        self.options_builder.add_dropdown_option("menu_example", "Menu Example", ["A", "B", "C"])
+        #Creates the UI options at startup, running time is [1minute to 6hrs], option to hop when players are nearby the bot   
+        self.options_builder.add_slider_option("running_time", "How long to run (minutes)?", 1, 360)
+        self.options_builder.add_checkbox_option("hop_when_people_nearby", "Hop when people are nearby?", ["Yes"])
 
     def save_options(self, options: dict):
         """
@@ -42,18 +42,15 @@ class SandstoneMiner(OSRSBot):
         for option in options:
             if option == "running_time":
                 self.running_time = options[option]
-            elif option == "text_edit_example":
-                self.log_msg(f"Text edit example: {options[option]}")
-            elif option == "multi_select_example":
-                self.log_msg(f"Multi-select example: {options[option]}")
-            elif option == "menu_example":
-                self.log_msg(f"Menu example: {options[option]}")
+            elif option == "hop_when_people_nearby":
+                self.hop_for_players = options[option] != []
             else:
                 self.log_msg(f"Unknown option: {option}")
                 print("Developer: ensure that the option keys are correct, and that options are being unpacked correctly.")
                 self.options_set = False
                 return
         self.log_msg(f"Running time: {self.running_time} minutes.")
+        self.log_msg(f"Hop for nearby players: {'True' if self.hop_for_players else 'False'}.")
         self.log_msg("Options set successfully.")
         self.options_set = True
 
@@ -62,10 +59,11 @@ class SandstoneMiner(OSRSBot):
         # Setup APIs
         # api_m = MorgHTTPSocket()
         # api_s = StatusSocket()
-        self.rocks_mined = 0
-        self.buckets_of_sand = 0
+
         self.last_inv_slot = self.win.inventory_slots[27].screenshot()
-        self.total_xp = ocr.extract_text(self.win.total_xp, ocr.PLAIN_12, [clr.WHITE]) 
+        self.total_xp = ocr.extract_text(self.win.total_xp, ocr.PLAIN_12, [clr.WHITE])
+        self.start_xp = ocr.extract_text(self.win.total_xp, ocr.PLAIN_12, [clr.WHITE])
+        
         
 
         # self.open_inventory()
@@ -101,23 +99,47 @@ class SandstoneMiner(OSRSBot):
         self.mouse.click()
 
     def camera_setup(self):        
-        #Sets camera facing east, then move to a bird eyes view
+        #Sets camera facing south, then move to a bird eyes view
         self.set_compass_south()
         pyautogui.keyDown('up')
         time.sleep(random.randint(1010,1300)/1000)
         pyautogui.keyUp('up')
-        #need zoom out
+        #TODO implement zoom out
 
     def total_xp_change(self):
         #Extracts total xp as a string, loops untill change then updates new total xp
-        new_total_xp = ocr.extract_text(self.win.total_xp, ocr.PLAIN_12, [clr.WHITE])        
+        new_total_xp = ocr.extract_text(self.win.total_xp, ocr.PLAIN_12, [clr.WHITE])    
         while new_total_xp == self.total_xp:
             new_total_xp = ocr.extract_text(self.win.total_xp, ocr.PLAIN_12, [clr.WHITE])
             pass
-        else:            
+        else:      
+            #Rock mined counter goes up      
             self.rocks_mined += 1
             self.log_msg(f"You've mined {self.rocks_mined} rocks!")
+
+            #Calcualtes what sand you mined based on xp change and logs it
+            gained_xp = int(new_total_xp) - int(self.total_xp)
+            if gained_xp == 30:
+                self.one_kg += 1
+            elif gained_xp == 40:
+                self.two_kg += 1
+            elif gained_xp == 50:
+                self.five_kg += 1
+            else:
+                self.ten_kg +=1
+
+            #Sets new total XP and calculates total gained
             self.total_xp = ocr.extract_text(self.win.total_xp, ocr.PLAIN_12, [clr.WHITE])
+            total_gained_xp = int(self.total_xp) - int(self.start_xp)
+            formated_gained_xp = format(total_gained_xp, ",")
+            self.log_msg(f"You've gained {formated_gained_xp} xp!")
+
+            #Calculates sand and logs the assosiated logs for loggging purposes
+            self.calculate_sand()
+            self.log_msg(f"1kg Sandstone x{self.one_kg},  2kg Sandstone x{self.two_kg},  5kg Sandstone x{self.five_kg},  10kg Sandstone x{self.ten_kg}")
+            self.log_msg(f"You have collected in total {self.buckets_of_sand} buckets of sand")
+
+                        
             return self.total_xp
     
     def mine_sandstone(self):
@@ -134,7 +156,13 @@ class SandstoneMiner(OSRSBot):
             time.sleep(1)
             return self.mine_sandstone()
 
-        
+    def calculate_sand(self):
+        one_sand = self.one_kg * 1
+        two_sand = self.two_kg * 2
+        four_sand = self.five_kg * 4
+        eight_sand = self.ten_kg * 8
+        self.buckets_of_sand = one_sand + two_sand + four_sand + eight_sand
+        return self.buckets_of_sand
 
     def deposit_sandstone(self):
         #clicks to deposit at grinder
@@ -161,6 +189,7 @@ class SandstoneMiner(OSRSBot):
             
 
     def check_last_inv(self):
+        #TODO, UPDATE SO IT CHECKS AGAINST A TRUE EMPTY TILE AND IF FILLED BY GEOD CHECK NEXT ONE DOWN
         # Takes the screenshot at the beginning of the bot and compares it to the current screenshot to determine the full inventory
         self.new_last_inv = self.win.inventory_slots[27].screenshot()
         while True:
@@ -172,24 +201,18 @@ class SandstoneMiner(OSRSBot):
                 self.new_last_inv = self.win.inventory_slots[27].screenshot()
 
 
-    def box_at_mouse(self):
-        mouse_x, mouse_y = pyautogui.position()
-        print("Mouse coordinates: x =", mouse_x, "y =", mouse_y)
+
     
         
             
 
     
 #check for xp change doesnt always work incase someone steals your sandstone
-#geods
+#geods last inventory
 #sometime it doesnt see rocks with one error
 #has to mine again at 28
-#issue with none object on grinder
-#add total sand counter
-#add mined coutner
+
+
 #add time running counter
 
-#1k= 1
-#2k = 2
-#5k = 4
-#10k = 8
+

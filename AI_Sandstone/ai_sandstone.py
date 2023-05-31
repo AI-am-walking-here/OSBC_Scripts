@@ -3,6 +3,8 @@ import time
 import random
 import pyautogui
 import numpy as np
+import utilities.game_launcher as launcher    # |Allows for custom profile launch
+import pathlib                                # |
 import utilities.ocr as ocr
 import utilities.api.item_ids as ids
 import utilities.color as clr
@@ -12,7 +14,7 @@ from utilities.api.morg_http_client import MorgHTTPSocket
 from utilities.api.status_socket import StatusSocket
 
 
-class SandstoneMiner(OSRSBot):
+class SandstoneMiner(OSRSBot, launcher.Launchable):
     def __init__(self):
         #Initialize the bot when some predefined variables, can change some with options
         bot_title = "AI Sandstone"
@@ -52,6 +54,16 @@ class SandstoneMiner(OSRSBot):
         self.log_msg("Options set successfully.")
         self.options_set = True
 
+    def launch_game(self):
+        settings = pathlib.Path(__file__).parent.joinpath("custom_settings.properties")
+        launcher.launch_runelite(
+            properties_path=settings,
+            game_title=self.game_title,
+            use_profile_manager=True,
+            profile_name="AI Sandstone",  # Supply a name if you'd like to save it to PM permanently
+            callback=self.log_msg,
+        )
+
     def main_loop(self):
         #Main loop where the bot functions
         self.last_inv_slot = self.win.inventory_slots[27].screenshot()
@@ -66,13 +78,13 @@ class SandstoneMiner(OSRSBot):
 
             #### ----- Perform bot actions here ----- ####
             
-            # if self.hop_for_players == True:
-            #     self.check_for_players()
-            #     self.hop_for_players_function()
-            # self.mine_sandstone()            
-            # self.total_xp_change()
-            # self.check_last_inv()
-            # self.update_progress((time.time() - start_time) / end_time)
+            if self.hop_for_players == True:
+                self.check_for_players()
+                self.hop_for_players_function()
+            self.mine_sandstone()            
+            self.total_xp_change()
+            self.check_last_inv()
+            self.update_progress((time.time() - start_time) / end_time)
             
                
         self.update_progress(1)
@@ -177,25 +189,13 @@ class SandstoneMiner(OSRSBot):
         else:
             print("action grinder finished")
             time.sleep(random.randint(1500, 2000) / 1000)            
-
-    def check_last_inv(self):
-        #TODO, UPDATE SO IT CHECKS AGAINST A TRUE EMPTY TILE AND IF FILLED BY GEOD CHECK NEXT ONE DOWN
-        #Takes the screenshot at the beginning of the bot and compares it to the current screenshot to determine the full inventory
-        self.new_last_inv = self.win.inventory_slots[27].screenshot()
-        while True:
-            if np.array_equal(self.new_last_inv, self.last_inv_slot):
-                break
-            else:
-                print("tryna depo")
-                self.deposit_sandstone()                
-                self.new_last_inv = self.win.inventory_slots[27].screenshot()
     
     def check_for_players(self):
         #Checks the minimap for players then returns +1 to the player count
         other_player = imsearch.BOT_IMAGES.joinpath("sandstone_images", "pink_player_dot.png")        
         if npc_contact := imsearch.search_img_in_rect(other_player, self.win.minimap):       
             self.player_count += 1
-            self.log_msg(self.player_count)
+            self.log_msg(f"Players nearby notice for {self.player_count} loop")
         else:
             self.player_count = 0
 
@@ -204,7 +204,15 @@ class SandstoneMiner(OSRSBot):
         if self.player_count == 4:
             pyautogui.hotkey('ctrl', 'shift', 'left')
 
-
+    def check_last_inv(self):
+        for i in range(27):
+            slot_location = self.win.inventory_slots[i]
+            slot_img = imsearch.BOT_IMAGES.joinpath("sandstone_images", "emptyslot.png")
+            if slot := imsearch.search_img_in_rect(slot_img, slot_location):
+                break
+            self.log_msg("Going to Deposit...")
+            self.deposit_sandstone()
+        
 
 
 

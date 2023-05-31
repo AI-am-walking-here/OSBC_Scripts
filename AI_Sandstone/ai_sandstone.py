@@ -18,6 +18,7 @@ class SandstoneMiner(OSRSBot):
         bot_title = "AI Sandstone"
         description = "Mines and deposits Sandstone"
         super().__init__(bot_title=bot_title, description=description)
+        self.hop_for_players = False
         self.player_count = 0
         self.rocks_mined = 0
         self.gained_xp = 0
@@ -27,8 +28,7 @@ class SandstoneMiner(OSRSBot):
         self.ten_kg = 0
         self.buckets_of_sand = 0        
         self.running_time = 180
-        self.mouse_speed = "fastest"
-        
+        self.mouse_speed = "fastest"       
 
     def create_options(self):
         #Creates the UI options at startup, running time is [1minute to 6hrs], option to hop when players are nearby the bot   
@@ -65,13 +65,15 @@ class SandstoneMiner(OSRSBot):
         while time.time() - start_time < end_time:
 
             #### ----- Perform bot actions here ----- ####
-            self.check_for_players()
-            self.hop_for_players()
-            self.mine_sandstone()            
-            self.total_xp_change()
-            self.check_last_inv()
-            self.update_progress((time.time() - start_time) / end_time)
-            # Code within this block will LOOP until the bot is stopped.    
+            
+            # if self.hop_for_players == True:
+            #     self.check_for_players()
+            #     self.hop_for_players_function()
+            # self.mine_sandstone()            
+            # self.total_xp_change()
+            # self.check_last_inv()
+            # self.update_progress((time.time() - start_time) / end_time)
+            
                
         self.update_progress(1)
         self.log_msg("Finished.")
@@ -93,10 +95,14 @@ class SandstoneMiner(OSRSBot):
 
     def total_xp_change(self):
         #Extracts total xp as a string, loops untill change then updates new total xp
-        new_total_xp = ocr.extract_text(self.win.total_xp, ocr.PLAIN_12, [clr.WHITE])    
+        new_total_xp = ocr.extract_text(self.win.total_xp, ocr.PLAIN_12, [clr.WHITE])
+        total_xp_start_time = time.time()    
         while new_total_xp == self.total_xp:
             new_total_xp = ocr.extract_text(self.win.total_xp, ocr.PLAIN_12, [clr.WHITE])
-            pass
+            elapsed_time = time.time() - total_xp_start_time #If no XP change for more than 5 seconds       
+            if elapsed_time > 5:  
+                self.log_msg("No XP change detected. Retrying mine_sandstone...")
+                return self.mine_sandstone()
         else:      
             #Rock mined counter goes up      
             self.rocks_mined += 1
@@ -161,14 +167,16 @@ class SandstoneMiner(OSRSBot):
         except AttributeError:
             return self.deposit_sandstone()
         #Loops untill the inventory deposits then after the inventory changes it'll reset items and wait a 1.5-2 seconds
+        deposit_start_time = time.time()
         while np.array_equal(inventory_1, inventory_2):
-            inventory_2 = self.win.inventory_slots[27].screenshot()    
+            inventory_2 = self.win.inventory_slots[27].screenshot() 
+            elapsed_time = time.time() - deposit_start_time #If no inventory change for more than 15 seconds       
+            if elapsed_time > 15:  
+                self.log_msg("No XP change detected. Retrying mine_sandstone...")
+                return self.mine_sandstone()   
         else:
             print("action grinder finished")
             time.sleep(random.randint(1500, 2000) / 1000)            
-            self.items = 0
-            return self.items
-        #TODO find ut what self.items does
 
     def check_last_inv(self):
         #TODO, UPDATE SO IT CHECKS AGAINST A TRUE EMPTY TILE AND IF FILLED BY GEOD CHECK NEXT ONE DOWN
@@ -191,7 +199,7 @@ class SandstoneMiner(OSRSBot):
         else:
             self.player_count = 0
 
-    def hop_for_players(self):
+    def hop_for_players_function(self):
         #Hops previous world if player was detected for 3 loops
         if self.player_count == 4:
             pyautogui.hotkey('ctrl', 'shift', 'left')

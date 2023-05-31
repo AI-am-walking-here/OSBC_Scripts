@@ -14,10 +14,11 @@ from utilities.api.status_socket import StatusSocket
 
 class SandstoneMiner(OSRSBot):
     def __init__(self):
+        #Initialize the bot when some predefined variables, can change some with options
         bot_title = "AI Sandstone"
         description = "Mines and deposits Sandstone"
         super().__init__(bot_title=bot_title, description=description)
-        # Set option variables below (initial value is only used during headless testing)
+        self.player_count = 0
         self.rocks_mined = 0
         self.gained_xp = 0
         self.one_kg = 0
@@ -27,6 +28,7 @@ class SandstoneMiner(OSRSBot):
         self.buckets_of_sand = 0        
         self.running_time = 180
         self.mouse_speed = "fastest"
+        
 
     def create_options(self):
         #Creates the UI options at startup, running time is [1minute to 6hrs], option to hop when players are nearby the bot   
@@ -34,11 +36,7 @@ class SandstoneMiner(OSRSBot):
         self.options_builder.add_checkbox_option("hop_when_people_nearby", "Hop when people are nearby?", ["Yes"])
 
     def save_options(self, options: dict):
-        """
-        For each option in the dictionary, if it is an expected option, save the value as a property of the bot.
-        If any unexpected options are found, log a warning. If an option is missing, set the options_set flag to
-        False.
-        """
+        #Saves the Running Time and the Hop When Player Nearby options
         for option in options:
             if option == "running_time":
                 self.running_time = options[option]
@@ -55,51 +53,38 @@ class SandstoneMiner(OSRSBot):
         self.options_set = True
 
     def main_loop(self):
-
-        # Setup APIs
-        # api_m = MorgHTTPSocket()
-        # api_s = StatusSocket()
-
+        #Main loop where the bot functions
         self.last_inv_slot = self.win.inventory_slots[27].screenshot()
         self.total_xp = ocr.extract_text(self.win.total_xp, ocr.PLAIN_12, [clr.WHITE])
-        self.start_xp = ocr.extract_text(self.win.total_xp, ocr.PLAIN_12, [clr.WHITE])
-        
-        
-
-        # self.open_inventory()
+        self.start_xp = ocr.extract_text(self.win.total_xp, ocr.PLAIN_12, [clr.WHITE])     
+        self.open_inventory()
 
         # Main loop
         start_time = time.time()
         end_time = self.running_time * 60
         while time.time() - start_time < end_time:
-            #### ----- Perform bot actions here ----- ###
-            self.mine_sandstone()
+
+            #### ----- Perform bot actions here ----- ####
+            self.check_for_players()
+            self.hop_for_players()
+            self.mine_sandstone()            
             self.total_xp_change()
             self.check_last_inv()
-
-
-
-             #deposits too fast and ties to click rock while moving causing a miss click
-           
-            # Code within this block will LOOP until the bot is stopped.
-
             self.update_progress((time.time() - start_time) / end_time)
-
+            # Code within this block will LOOP until the bot is stopped.    
+               
         self.update_progress(1)
         self.log_msg("Finished.")
         self.stop()
 
-
-
-
     def open_inventory(self):
-        #Clicks the inv icon
+        #Clicks the inv icon on the control panel
         self.log_msg("Opening Inventory...")
         self.mouse.move_to(self.win.cp_tabs[3].random_point(), mouseSpeed=self.mouse_speed)
         self.mouse.click()
 
     def camera_setup(self):        
-        #Sets camera facing south, then move to a bird eyes view
+        #Sets camera facing south, then moves up to a bird eyes view
         self.set_compass_south()
         pyautogui.keyDown('up')
         time.sleep(random.randint(1010,1300)/1000)
@@ -138,14 +123,12 @@ class SandstoneMiner(OSRSBot):
             self.calculate_sand()
             self.log_msg(f"1kg Sandstone x{self.one_kg},  2kg Sandstone x{self.two_kg},  5kg Sandstone x{self.five_kg},  10kg Sandstone x{self.ten_kg}")
             self.log_msg(f"You have collected in total {self.buckets_of_sand} buckets of sand")
-
-                        
-            return self.total_xp
     
     def mine_sandstone(self):
-        # Mines tagged sandstone and stops when 
+        #Mines tagged sandstone and stops when 
         self.log_msg("mining...")
-        sandstone = self.get_nearest_tag(clr.CYAN)    
+        sandstone = self.get_nearest_tag(clr.CYAN)
+        #If the color recognition bot fails it will run the command again    
         try:
             self.mouse.move_to(sandstone.random_point(), mouseSpeed=self.mouse_speed)
             click_result = self.mouse.click(check_red_click=True)
@@ -157,6 +140,7 @@ class SandstoneMiner(OSRSBot):
             return self.mine_sandstone()
 
     def calculate_sand(self):
+        #Uses total_xp_change() calculations to Calulate total sand earned 
         one_sand = self.one_kg * 1
         two_sand = self.two_kg * 2
         four_sand = self.five_kg * 4
@@ -170,12 +154,13 @@ class SandstoneMiner(OSRSBot):
         grinder = self.get_nearest_tag(clr.YELLOW)
         inventory_1 = self.win.inventory_slots[27].screenshot()
         inventory_2 = self.win.inventory_slots[27].screenshot()
+        #If the color recognition bot fails it will run the command again  
         try:
             self.mouse.move_to(grinder.random_point(), mouseSpeed=self.mouse_speed)
             self.mouse.click(check_red_click=True)
         except AttributeError:
             return self.deposit_sandstone()
-        
+        #Loops untill the inventory deposits then after the inventory changes it'll reset items and wait a 1.5-2 seconds
         while np.array_equal(inventory_1, inventory_2):
             inventory_2 = self.win.inventory_slots[27].screenshot()    
         else:
@@ -183,14 +168,11 @@ class SandstoneMiner(OSRSBot):
             time.sleep(random.randint(1500, 2000) / 1000)            
             self.items = 0
             return self.items
- 
-
-            
-            
+        #TODO find ut what self.items does
 
     def check_last_inv(self):
         #TODO, UPDATE SO IT CHECKS AGAINST A TRUE EMPTY TILE AND IF FILLED BY GEOD CHECK NEXT ONE DOWN
-        # Takes the screenshot at the beginning of the bot and compares it to the current screenshot to determine the full inventory
+        #Takes the screenshot at the beginning of the bot and compares it to the current screenshot to determine the full inventory
         self.new_last_inv = self.win.inventory_slots[27].screenshot()
         while True:
             if np.array_equal(self.new_last_inv, self.last_inv_slot):
@@ -199,19 +181,36 @@ class SandstoneMiner(OSRSBot):
                 print("tryna depo")
                 self.deposit_sandstone()                
                 self.new_last_inv = self.win.inventory_slots[27].screenshot()
+    
+    def check_for_players(self):
+        #Checks the minimap for players then returns +1 to the player count
+        other_player = imsearch.BOT_IMAGES.joinpath("sandstone_images", "pink_player_dot.png")        
+        if npc_contact := imsearch.search_img_in_rect(other_player, self.win.minimap):       
+            self.player_count += 1
+            self.log_msg(self.player_count)
+        else:
+            self.player_count = 0
+
+    def hop_for_players(self):
+        #Hops previous world if player was detected for 3 loops
+        if self.player_count == 4:
+            pyautogui.hotkey('ctrl', 'shift', 'left')
+
+
+
+
+
+            
+            
 
 
 
     
         
             
-
-    
+#when maxed on sand log off
 #check for xp change doesnt always work incase someone steals your sandstone
 #geods last inventory
-#sometime it doesnt see rocks with one error
-#has to mine again at 28
-
 
 #add time running counter
 

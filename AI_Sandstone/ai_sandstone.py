@@ -10,6 +10,8 @@ import utilities.api.item_ids as ids
 import utilities.color as clr
 import utilities.random_util as rd
 from model.osrs.osrs_bot import OSRSBot
+from pynput.keyboard import Controller, Key #used to hop hotkey
+from pynput.mouse import Controller, Button
 
 
 
@@ -69,22 +71,22 @@ class SandstoneMiner(OSRSBot, launcher.Launchable):
         self.total_xp = ocr.extract_text(self.win.total_xp, ocr.PLAIN_12, [clr.WHITE])
         self.start_xp = ocr.extract_text(self.win.total_xp, ocr.PLAIN_12, [clr.WHITE])     
         self.open_inventory()
+        self.camera_setup()
 
         # Main loop
         start_time = time.time()
         end_time = self.running_time * 60
         while time.time() - start_time < end_time:
 
-            #### ----- Perform bot actions here ----- ####
-            
+            ### ----- Perform bot actions here ----- ####
             if self.hop_for_players == True:
                 self.check_for_players()
                 self.hop_for_players_function()
+            self.check_last_inv()    
             self.mine_sandstone()            
             self.total_xp_change()
-            self.check_last_inv()
             self.update_progress((time.time() - start_time) / end_time)
-            
+
                
         self.update_progress(1)
         self.log_msg("Finished.")
@@ -102,7 +104,15 @@ class SandstoneMiner(OSRSBot, launcher.Launchable):
         pyautogui.keyDown('up')
         time.sleep(random.randint(1010,1300)/1000)
         pyautogui.keyUp('up')
-        #TODO implement zoom out
+        pyautogui.scroll(-1000)
+        self.scroll_down
+
+    def scroll_down(self):
+        #Zooms the window out
+        mouse = Controller()
+        for i in range(30):
+            mouse.scroll(0, -1)
+            time.sleep(random.choice([0.001, 0.002]))
 
     def total_xp_change(self):
         #Extracts total xp as a string, loops untill change then updates new total xp
@@ -151,6 +161,7 @@ class SandstoneMiner(OSRSBot, launcher.Launchable):
             click_result = self.mouse.click(check_red_click=True)
             if not click_result:
                 self.mine_sandstone()
+                self.log_msg("Didn't see red click, mining again...")
         except AttributeError:
             self.log_msg("AttributeError occurred. Retrying mine_sandstone...")
             time.sleep(1)
@@ -195,23 +206,51 @@ class SandstoneMiner(OSRSBot, launcher.Launchable):
         if npc_contact := imsearch.search_img_in_rect(other_player, self.win.minimap):       
             self.player_count += 1
             self.log_msg(f"Players nearby notice for {self.player_count} loop")
-        else:
-            self.player_count = 0
+            return self.player_count
+        
+        elif self.player_count > 0:
+            self.player_count = 0            
+            self.log_msg(f"Players loop count reset")
+            return self.player_count
 
     def hop_for_players_function(self):
         #Hops previous world if player was detected for 3 loops
-        if self.player_count == 4:
-            pyautogui.hotkey('ctrl', 'shift', 'left')
+        if self.player_count > 4:
+            self.press_hop_previous()
+            
+    def press_hop_previous(self):
+        #Presses hotkey for Quick-hop previous
+        keyboard = Controller()
 
+        # Define the hotkey combination
+        hotkey_combination = [Key.ctrl_l, Key.shift, Key.left]
+
+        # Simulate the hotkey combination
+        for key in hotkey_combination:
+            keyboard.press(key)
+
+        # Release the keys in reverse order
+        for key in reversed(hotkey_combination):
+            keyboard.release(key)           
+            
     def check_last_inv(self):
-        for i in range(27):
+        found_empty_slot = False  # Boolean variable to track if any empty slot is found
+        
+        for i in range(28):
             slot_location = self.win.inventory_slots[i]
             slot_img = imsearch.BOT_IMAGES.joinpath("sandstone_images", "emptyslot.png")
+            
             if slot := imsearch.search_img_in_rect(slot_img, slot_location):
-                break
+                found_empty_slot = True  # Set the flag to True if any empty slot is found
+                break  # Exit the loop if an empty slot is found
+        
+        if not found_empty_slot:
             self.log_msg("Going to Deposit...")
             self.deposit_sandstone()
-        
+                    
+
+            
+
 
 
 
@@ -229,4 +268,6 @@ class SandstoneMiner(OSRSBot, launcher.Launchable):
 
 #add time running counter
 
+
+#pip install pynput
 

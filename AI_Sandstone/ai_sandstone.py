@@ -10,8 +10,8 @@ import utilities.api.item_ids as ids
 import utilities.color as clr
 import utilities.random_util as rd
 from model.osrs.osrs_bot import OSRSBot
-from pynput.keyboard import Controller, Key #used to hop hotkey
-from pynput.mouse import Controller, Button
+from pynput.keyboard import Controller as KeyboardController, Key    # | Had to change the name a bit to avoid errors
+from pynput.mouse import Controller as MouseController               # |
 
 
 
@@ -105,14 +105,7 @@ class SandstoneMiner(OSRSBot, launcher.Launchable):
         time.sleep(random.randint(1010,1300)/1000)
         pyautogui.keyUp('up')
         pyautogui.scroll(-1000)
-        self.scroll_down
-
-    def scroll_down(self):
-        #Zooms the window out
-        mouse = Controller()
-        for i in range(30):
-            mouse.scroll(0, -1)
-            time.sleep(random.choice([0.001, 0.002]))
+        self.scroll_down()
 
     def total_xp_change(self):
         #Extracts total xp as a string, loops untill change then updates new total xp
@@ -216,23 +209,14 @@ class SandstoneMiner(OSRSBot, launcher.Launchable):
     def hop_for_players_function(self):
         #Hops previous world if player was detected for 3 loops
         if self.player_count > 4:
+            self.player_count = 0
+            self.log_msg("Hopping...")
             self.press_hop_previous()
-            
-    def press_hop_previous(self):
-        #Presses hotkey for Quick-hop previous
-        keyboard = Controller()
-
-        # Define the hotkey combination
-        hotkey_combination = [Key.ctrl_l, Key.shift, Key.left]
-
-        # Simulate the hotkey combination
-        for key in hotkey_combination:
-            keyboard.press(key)
-
-        # Release the keys in reverse order
-        for key in reversed(hotkey_combination):
-            keyboard.release(key)           
-            
+            time.sleep(20)
+            self.open_inventory()
+        else:
+            return
+           
     def check_last_inv(self):
         found_empty_slot = False  # Boolean variable to track if any empty slot is found
         
@@ -247,9 +231,32 @@ class SandstoneMiner(OSRSBot, launcher.Launchable):
         if not found_empty_slot:
             self.log_msg("Going to Deposit...")
             self.deposit_sandstone()
-                    
 
-            
+    def press_hop_previous(self):
+        # Presses hotkey for Quick-hop previous
+        keyboard = KeyboardController()
+
+        # Define the hotkey combination
+        hotkey_combination = [Key.ctrl_l, Key.shift, Key.left]
+
+        # Simulate the hotkey combination
+        for key in hotkey_combination:
+            keyboard.press(key)
+
+        time.sleep(random.randint(500, 1000) / 1000)
+
+        # Release the keys in reverse order
+        for key in reversed(hotkey_combination):
+            keyboard.release(key)
+
+    def scroll_down(self):
+        # Scrolls down
+        mouse = MouseController()
+        for i in range(30):
+            mouse.scroll(0, -1)
+            random_value = random.choice([0.001, 0.002])
+            time.sleep(random_value)
+
 
 
 
@@ -263,8 +270,8 @@ class SandstoneMiner(OSRSBot, launcher.Launchable):
         
             
 #when maxed on sand log off
-#check for xp change doesnt always work incase someone steals your sandstone
-#geods last inventory
+
+
 
 #add time running counter
 

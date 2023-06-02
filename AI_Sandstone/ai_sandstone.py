@@ -177,8 +177,14 @@ class SandstoneMiner(OSRSBot, launcher.Launchable):
         #clicks to deposit at grinder
         self.log_msg("depo...")
         grinder = self.get_nearest_tag(clr.YELLOW)
-        inventory_1 = self.win.inventory_slots[27].screenshot()
-        inventory_2 = self.win.inventory_slots[27].screenshot()
+        inventory_screenshots = []
+        new_inventory_screenshots = []
+        for i in range(28):
+            inventory_screenshot = self.win.inventory_slots[i].screenshot()
+            inventory_screenshots.append(inventory_screenshot)
+        for i in range(28):
+            new_inventory_screenshot = self.win.inventory_slots[i].screenshot()
+            new_inventory_screenshots.append(new_inventory_screenshot)            
         #If the color recognition bot fails it will run the command again  
         try:
             self.mouse.move_to(grinder.random_point(), mouseSpeed=self.mouse_speed)
@@ -187,9 +193,9 @@ class SandstoneMiner(OSRSBot, launcher.Launchable):
             return self.deposit_sandstone()
         #Loops untill the inventory deposits then after the inventory changes it'll reset items and wait a 1.5-2 seconds
         deposit_start_time = time.time()
-        while np.array_equal(inventory_1, inventory_2):
-            inventory_2 = self.win.inventory_slots[27].screenshot() 
-            elapsed_time = time.time() - deposit_start_time #If no inventory change for more than 15 seconds       
+        while all(np.array_equal(img1, img2) for img1, img2 in zip(inventory_screenshots, new_inventory_screenshots)):
+            new_inventory_screenshots = [self.win.inventory_slots[i].screenshot() for i in range(28)]
+            elapsed_time = time.time() - deposit_start_time      
             if elapsed_time > 15:  
                 self.log_msg("No XP change detected. Retrying mine_sandstone...")
                 return self.mine_sandstone()   
@@ -275,8 +281,6 @@ class SandstoneMiner(OSRSBot, launcher.Launchable):
 
 
 
-    
-#need to check full inventory differently to do full inv log off
 
 
 #pip install pynput

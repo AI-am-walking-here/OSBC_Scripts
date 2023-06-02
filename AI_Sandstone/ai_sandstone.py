@@ -109,7 +109,6 @@ class SandstoneMiner(OSRSBot, launcher.Launchable):
         pyautogui.keyDown('up')
         time.sleep(random.randint(1010,1300)/1000)
         pyautogui.keyUp('up')        
-        
 
     def total_xp_change(self):
         #Extracts total xp as a string, loops untill change then updates new total xp
@@ -268,7 +267,6 @@ class SandstoneMiner(OSRSBot, launcher.Launchable):
             random_value = random.choice([0.001, 0.002])
             time.sleep(random_value)
 
-
     def find_text_full(self):
         found_text = ocr.find_text("full",self.win.chat,ocr.QUILL_8,clr.BLACK)
         result = bool(found_text)
@@ -281,6 +279,8 @@ class SandstoneMiner(OSRSBot, launcher.Launchable):
 
 
 
+    
+#need to check full inventory differently to do full inv log off
 
 
 #pip install pynput

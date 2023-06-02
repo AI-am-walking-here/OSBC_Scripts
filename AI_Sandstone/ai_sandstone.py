@@ -73,12 +73,15 @@ class SandstoneMiner(OSRSBot, launcher.Launchable):
         self.open_inventory()
         self.camera_setup()
 
+        
+
         # Main loop
         start_time = time.time()
         end_time = self.running_time * 60
         while time.time() - start_time < end_time:
 
             ### ----- Perform bot actions here ----- ####
+            
             if self.hop_for_players == True:
                 self.check_for_players()
                 self.hop_for_players_function()
@@ -90,6 +93,7 @@ class SandstoneMiner(OSRSBot, launcher.Launchable):
                
         self.update_progress(1)
         self.log_msg("Finished.")
+        self.logout()
         self.stop()
 
     def open_inventory(self):
@@ -101,11 +105,11 @@ class SandstoneMiner(OSRSBot, launcher.Launchable):
     def camera_setup(self):        
         #Sets camera facing south, then moves up to a bird eyes view
         self.set_compass_south()
+        self.scroll_down()
         pyautogui.keyDown('up')
         time.sleep(random.randint(1010,1300)/1000)
-        pyautogui.keyUp('up')
-        pyautogui.scroll(-1000)
-        self.scroll_down()
+        pyautogui.keyUp('up')        
+        
 
     def total_xp_change(self):
         #Extracts total xp as a string, loops untill change then updates new total xp
@@ -190,6 +194,7 @@ class SandstoneMiner(OSRSBot, launcher.Launchable):
                 self.log_msg("No XP change detected. Retrying mine_sandstone...")
                 return self.mine_sandstone()   
         else:
+            self.find_text_full()
             print("action grinder finished")
             time.sleep(random.randint(1500, 2000) / 1000)            
     
@@ -258,8 +263,12 @@ class SandstoneMiner(OSRSBot, launcher.Launchable):
             time.sleep(random_value)
 
 
-
-
+    def find_text_full(self):
+        found_text = ocr.find_text("full",self.win.chat,ocr.QUILL_8,clr.BLACK)
+        result = bool(found_text)
+        if result is True:
+            self.logout()
+            self.stop()
 
             
             
@@ -267,13 +276,7 @@ class SandstoneMiner(OSRSBot, launcher.Launchable):
 
 
     
-        
-            
-#when maxed on sand log off
-
-
-
-#add time running counter
+#need to check full inventory differently to do full inv log off
 
 
 #pip install pynput

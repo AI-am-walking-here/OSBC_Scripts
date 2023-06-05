@@ -37,3 +37,5 @@ Enhance your sandstone mining activities in Old School RuneScape with the Sandst
 #### Rates
 
 #### Getting Started
+1. Make sure your models are taged like this.
+![Check Screen](Github_img/Check screen.png)

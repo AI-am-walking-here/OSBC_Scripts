@@ -57,12 +57,13 @@ Copy/Paste this line into your init file --->
 8. select `Launch Game` <br>
    if this is your first bot follow the sub instructions.
    - First: Locate and select the Runelite.exe 
-   - Second: Locate and select the Runelite Profiles "Try:`C:/Users/<user>/.runelite/profiles2`"  
-9. Make sure when standing on the RED-X you are able to see the sandstone grinder fully.
+   - Second: Locate and select the Runelite Profiles "Try:`C:/Users/<user>/.runelite/profiles2`" 
+9. select `Play` 
+10. Make sure when standing on the RED-X you are able to see the sandstone grinder fully.
 ![Check Screen](Github_img/Check_screen.png)
-10. Make sure the rocks are Tagged in CYAN and the Grinder is tagged in YELLOW. If you did everything right, it should already be tagged when launched.
+11. Make sure the rocks are Tagged in CYAN and the Grinder is tagged in YELLOW. If you did everything right, it should already be tagged when launched.
 
 ![Rocks](Github_img/tag_these_rocks.png)
 ![Grinder](Github_img/tag_this_grinder.png)
 
-11. Enjoy your botting!!!
+12. Enjoy your botting!!!

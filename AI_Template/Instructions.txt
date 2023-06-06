@@ -1,4 +1,7 @@
+Replace the important parts of the template with names in relation to the bot you want to create.
 
+ADD this line to the OSRS __init__.py file located in src/model/osrs/__init__.py
+from .<BotFolderName>.<BotFileName(without.py)> import <BotClassName>
 
 ADD this to the bottom of OSBC.py to run the program in headless mode(No UI)
     from model.osrs.<Bot Folder Name>.<Bot file name(without ".py" )> import <BotClassName>

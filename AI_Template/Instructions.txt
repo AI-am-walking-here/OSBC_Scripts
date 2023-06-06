@@ -1,0 +1,14 @@
+
+
+ADD this to the bottom of OSBC.py to run the program in headless mode(No UI)
+    from model.osrs.<Bot Folder Name>.<Bot file name(without ".py" )> import <BotClassName>
+    app = App(test=True)
+    app.test(SandstoneMiner())
+
+
+Add these colors to src/utilities/color.py
+They are chat box text colors
+
+TEXT_RED = Color([239,16,32])
+TEXT_GREEN = Color([0,95,0])
+TEXT_BLUE = Color([1,1,255])

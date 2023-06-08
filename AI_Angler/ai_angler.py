@@ -23,11 +23,11 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
         bot_title = "AI_Angler Fisher"
         description = "Fishes Angler fish at Port Piscarilius"
         super().__init__(bot_title=bot_title, description=description)
-        self.angler_hat = 1
-        self.angler_top = 1
-        self.angler_waders = 1
-        self.angler_boots = 1
-        self.angler_gloves = 1
+        self.angler_hat = 0
+        self.angler_top = 0
+        self.angler_waders = 0
+        self.angler_boots = 0
+        self.angler_gloves = 0
 
         self.running_time = 180
         self.mouse_speed = "fast"       
@@ -74,6 +74,7 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
 
             ### ----- Perform bot actions below here ----- ####
             self.check_equiptment()
+
             # self.camera_setup()     
             # self.click_minimap_from_bank()
             # self.click_minimap_from_fishing_spot()
@@ -123,6 +124,32 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
 
 
     def check_equiptment(self):
+        angler_hat = imsearch.BOT_IMAGES.joinpath("angler_images", "Angler_hat.png")
+        angler_top = imsearch.BOT_IMAGES.joinpath("angler_images", "Angler_top.png")
+        angler_waders = imsearch.BOT_IMAGES.joinpath("angler_images", "Angler_waders.png")
+        angler_boots = imsearch.BOT_IMAGES.joinpath("angler_images", "Angler_boots.png")
+
+        angler_hat_is_on = imsearch.search_img_in_rect(angler_hat, self.win.control_panel)
+        angler_top_is_on = imsearch.search_img_in_rect(angler_top, self.win.control_panel)
+        angler_waders_is_on = imsearch.search_img_in_rect(angler_waders, self.win.control_panel)
+        angler_boots_is_on = imsearch.search_img_in_rect(angler_boots, self.win.control_panel)
+        
+        if angler_hat_is_on is not None:
+            self.angler_hat = 1
+        if angler_top_is_on is not None:
+            self.angler_top = 1
+        if angler_waders_is_on is not None:
+            self.angler_waders = 1
+        if angler_boots_is_on is not None:
+            self.angler_boots = 1
+
+        total_angler_outfit_pieces = self.angler_hat + self.angler_top + self.angler_waders + self.angler_boots
+        outfit_xp_bonus = (self.angler_hat * 0.4) + (self.angler_top * 0.8) + (self.angler_waders * 0.6) + (self.angler_boots * 0.2) 
+        if total_angler_outfit_pieces == 4:
+            outfit_xp_bonus += 0.5
+        rounded_outfit_xp_bonus = round(outfit_xp_bonus,1)
+
+        self.log_msg(f"You have on {total_angler_outfit_pieces}/4 Angler Set pieces, a {rounded_outfit_xp_bonus}% XP Bonus")
         
 
             

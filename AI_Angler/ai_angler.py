@@ -19,27 +19,29 @@ from model.osrs.osrs_bot import OSRSBot
 
 class AnglerFisher(OSRSBot, launcher.Launchable):
     def __init__(self):
-        #Initialize the bot when some predefined variables, can change some with options
+        # Initialize the bot when some predefined variables, can change some with options
         bot_title = "AI_Angler Fisher"
         description = "Fishes Angler fish at Port Piscarilius"
         super().__init__(bot_title=bot_title, description=description)
-        self.hop_for_players = False
-        self.player_count = 0 
+        self.angler_hat = 1
+        self.angler_top = 1
+        self.angler_waders = 1
+        self.angler_boots = 1
+        self.angler_gloves = 1
+
         self.running_time = 180
         self.mouse_speed = "fast"       
 
     def create_options(self):
-        #Creates the UI options at startup, running time is [1minute to 6hrs], option to hop when players are nearby the bot   
+        # Creates the UI options at startup, running time is [1minute to 6hrs], option to hop when players are nearby the bot   
         self.options_builder.add_slider_option("running_time", "How long to run (minutes)?", 1, 360)
-        self.options_builder.add_checkbox_option("hop_when_people_nearby", "Hop when people are nearby?", ["Yes"])
+
 
     def save_options(self, options: dict):
-        #Saves the Running Time and the Hop When Player Nearby options
+        # Saves the Running Time and the Hop When Player Nearby options
         for option in options:
             if option == "running_time":
                 self.running_time = options[option]
-            elif option == "hop_when_people_nearby":
-                self.hop_for_players = options[option] != []
             else:
                 self.log_msg(f"Unknown option: {option}")
                 print("Developer: ensure that the option keys are correct, and that options are being unpacked correctly.")
@@ -61,8 +63,8 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
         )
 
     def main_loop(self):
-        #Main loop where the bot functions       
-        #Put launch setup code here
+        # Main loop where the bot functions       
+        # Put launch setup code here
 
 
         # Main loop
@@ -71,12 +73,10 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
         while time.time() - start_time < end_time:
 
             ### ----- Perform bot actions below here ----- ####
-            
-            if self.hop_for_players == True:
-                self.check_for_players()
-                self.hop_for_players_function()      
-            self.click_bank()
-
+            self.check_equiptment()
+            # self.camera_setup()     
+            # self.click_minimap_from_bank()
+            # self.click_minimap_from_fishing_spot()
             self.update_progress((time.time() - start_time) / end_time)
             ### ----- Perform bot actions above here ----- ####
 
@@ -86,64 +86,96 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
         self.logout()
         self.stop()
 
+
+    def open_bank(self):
+        #Clicks Yellopw marker for epen bank
+        bank = self.get_nearest_tag(clr.YELLOW)
+        
+        #Trys to click bank, if the color recognition bot fails it will run the command again    
+        try:
+            self.mouse.move_to(bank.random_point(), mouseSpeed=self.mouse_speed)
+            click_result = self.mouse.click(check_red_click=True)
+            if not click_result:
+                self.open_bank()
+                self.log_msg("Didn't see red click, clicking again...")
+        except AttributeError:
+            self.log_msg("AttributeError occurred. Retrying click_bank...")
+            time.sleep(1)
+            return self.open_bank()
+
     def open_inventory(self):
-        #Clicks the inv icon on the control panel
+        # Clicks the inv icon on the control panel
         self.log_msg("Opening Inventory...")
         self.mouse.move_to(self.win.cp_tabs[3].random_point(), mouseSpeed=self.mouse_speed)
         self.mouse.click()
 
+    def click_equipment(self):
+        # Clicks the inv icon on the control panel
+        self.log_msg("Opening Equipment...")
+        self.mouse.move_to(self.win.cp_tabs[4].random_point(), mouseSpeed=self.mouse_speed)
+        self.mouse.click()
+        equipment_on = imsearch.BOT_IMAGES.joinpath("angler_images", "tab_equipment_on.png")
+        equipment_is_open = imsearch.search_img_in_rect(equipment_on, self.win.control_panel)
+        if equipment_is_open is None:
+            self.click_equipment()
+        else:
+            return
+
+
+    def check_equiptment(self):
+        
+
+            
+        
+
+
+
+
+
+
+
     def camera_setup(self):        
-        #Sets camera facing south, then moves up to a bird eyes view
-        self.set_compass_south()
-        self.scroll_down()
+        # Sets camera facing south, then moves up to a bird eyes view
+        self.compass_north()
+        self.scroll_down_minimap()
+        self.scroll_down_main_window()
         pyautogui.keyDown('up')
         time.sleep(random.randint(1010,1300)/1000)
         pyautogui.keyUp('up')        
+  
+    def scroll_down_main_window(self):
+        # Scrolls out in the main screen used in camera_setup()
+        main_window = self.win.game_view
+        self.mouse.move_to(main_window.random_point(), mouseSpeed=self.mouse_speed)
+        mouse = MouseController()
+        #Random scroll distance and speed
+        random_scroll_range = random.randint(30,40)
+        for i in range(random_scroll_range):
+            mouse.scroll(0, -1)
+            random_scroll_speed = random.choice([0.001, 0.002])
+            time.sleep(random_scroll_speed)
 
-    def click_thing(self):
-        #Mines tagged sandstone and stops when 
-        self.log_msg("clicking...")
-        thing = self.get_nearest_tag(clr.CYAN)
-        #If the color recognition bot fails it will run the command again    
-        try:
-            self.mouse.move_to(thing.random_point(), mouseSpeed=self.mouse_speed)
-            click_result = self.mouse.click(check_red_click=True)
-            if not click_result:
-                self.click_thing()
-                self.log_msg("Didn't see red click, clicking again...")
-        except AttributeError:
-            self.log_msg("AttributeError occurred. Retrying click_thing...")
-            time.sleep(1)
-            return self.click_thing()
+    def scroll_down_minimap(self):
+        # Scrolls out in the minimap used in camera_setup()
+        minimap = self.win.minimap
+        self.mouse.move_to(minimap.random_point(), mouseSpeed=self.mouse_speed)
+        mouse = MouseController()
+        #Random scroll distance and speed 
+        random_scroll_range = random.randint(30,40)
+        for i in range(random_scroll_range):
+            mouse.scroll(0, -1)
+            random_scroll_speed = random.choice([0.001, 0.002])
+            time.sleep(random_scroll_speed)
 
-    
-    def check_for_players(self):
-        #Checks the minimap for players then returns +1 to the player count
-        other_player = imsearch.BOT_IMAGES.joinpath("sandstone_images", "pink_player_dot.png")        
-        if player_noticed := imsearch.search_img_in_rect(other_player, self.win.minimap):       
-            self.player_count += 1
-            self.log_msg(f"Players nearby notice for {self.player_count} loop")
-            return self.player_count
-        
-        elif self.player_count > 0:
-            self.player_count = 0            
-            self.log_msg(f"Players loop count reset")
-            return self.player_count
+    def compass_north(self):
+        #Same as set_compass_nort(), but allows me to adjust speed.
+        self.log_msg("Setting compass North...")
+        self.mouse.move_to(self.win.compass_orb.random_point(),mouseSpeed="fast")
+        self.mouse.click()
 
-    def hop_for_players_function(self):
-        #Hops previous world if player was detected for 3 loops
-        if self.player_count > 4:
-            self.player_count = 0
-            self.log_msg("Hopping...")
-            self.press_hop_previous()
-            time.sleep(20)
-            self.open_inventory()
-        else:
-            return
-     
 
     def click_angler_spot(self):
-        #clicks fishing spot by searching for angler icon
+        # Clicks fishing spot by searching for angler icon
         fishing_spot_icon = imsearch.BOT_IMAGES.joinpath("angler_images", "angler_icon.png")
         fishing_spot_location = imsearch.search_img_in_rect(fishing_spot_icon, self.win.game_view)
         #If the color recognition bot fails it will run the command again    
@@ -157,44 +189,36 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
             self.log_msg("AttributeError occurred. Retrying click_angler_spot...")
             time.sleep(1)
             return self.click_angler_spot()
-
-    def click_bank(self):
-        #clicks fishing spot by searching for angler icon
-        bank = self.get_nearest_tag(clr.YELLOW)
         
+    def click_minimap_from_bank(self):
+        #clicks fishing spot by searching for angler icon
+        bank_minimap_location = imsearch.BOT_IMAGES.joinpath("angler_images", "minimap_at_bank.png")
+        bank_location_rect = imsearch.search_img_in_rect(bank_minimap_location, self.win.minimap)
         #If the color recognition bot fails it will run the command again    
         try:
-            self.mouse.move_to(bank.random_point(), mouseSpeed=self.mouse_speed)
-            click_result = self.mouse.click(check_red_click=True)
-            if not click_result:
-                self.click_bank()
-                self.log_msg("Didn't see red click, clicking again...")
+            self.mouse.move_to(bank_location_rect.random_point(), mouseSpeed=self.mouse_speed)
+            self.mouse.click()
         except AttributeError:
-            self.log_msg("AttributeError occurred. Retrying click_bank...")
+            self.log_msg("AttributeError occurred. Retrying click_minimap_from_bank...")
             time.sleep(1)
-            return self.click_bank()
+            return self.click_minimap_from_bank()
         
-    def click_minimap_bank(self):
-    #clicks fishing spot by searching for angler icon
-    bank_minimap_location = imsearch.BOT_IMAGES.joinpath("angler_images", "angler_icon.png")
-    bank_location_rect = imsearch.search_img_in_rect(fishing_spot_icon, self.win.game_view)
-    #If the color recognition bot fails it will run the command again    
-    try:
-        self.mouse.move_to(fishing_spot_location.random_point(), mouseSpeed=self.mouse_speed)
-        click_result = self.mouse.click(check_red_click=True)
-        if not click_result:
-            self.click_minimap_bank()
-            self.log_msg("Didn't see red click, clicking again...")
-    except AttributeError:
-        self.log_msg("AttributeError occurred. Retrying click_minimap_bank...")
-        time.sleep(1)
-        return self.click_minimap_bank()
+    def click_minimap_from_fishing_spot(self):
+        #clicks fishing spot by searching for angler icon
+        fishing_minimap_location = imsearch.BOT_IMAGES.joinpath("angler_images", "minimap_at_fishing.png")
+        fishing_location_rect = imsearch.search_img_in_rect(fishing_minimap_location, self.win.minimap)
+        #If the color recognition bot fails it will run the command again    
+        try:
+            self.mouse.move_to(fishing_location_rect.random_point(), mouseSpeed=self.mouse_speed)
+            self.mouse.click()
+        except AttributeError:
+            self.log_msg("AttributeError occurred. Retrying click_minimap_from_fishing_spot...")
+            time.sleep(1)
+            return self.click_minimap_from_fishing_spot()
 
 
-
-
-#Bank
-###deposit inventory
+#Bank click_bank()
+###deposit inventory need to remove everything that isn't needed
 ###fish barrel open/close, 
 ###if barrrel closed open it
 ###

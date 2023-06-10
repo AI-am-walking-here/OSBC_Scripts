@@ -29,6 +29,8 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
         self.angler_boots = 0
         self.angler_gloves = 0
 
+        self.sandworm_count = 0
+
         self.running_time = 180
         self.mouse_speed = "fast"       
 
@@ -73,11 +75,14 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
         while time.time() - start_time < end_time:
 
             ### ----- Perform bot actions below here ----- ####
-            self.check_equiptment()
+            self.check_sandworms()
+            # self.camera_setup()
+            # self.click_equipment()
+            # self.check_equiptment()
+            # self.open_inventory()
 
-            # self.camera_setup()     
-            # self.click_minimap_from_bank()
-            # self.click_minimap_from_fishing_spot()
+                 
+            
             self.update_progress((time.time() - start_time) / end_time)
             ### ----- Perform bot actions above here ----- ####
 
@@ -109,9 +114,10 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
         self.log_msg("Opening Inventory...")
         self.mouse.move_to(self.win.cp_tabs[3].random_point(), mouseSpeed=self.mouse_speed)
         self.mouse.click()
+        
 
     def click_equipment(self):
-        # Clicks the inv icon on the control panel
+        # Clicks the equipment icon on the control panel and searches to make sure it is complete
         self.log_msg("Opening Equipment...")
         self.mouse.move_to(self.win.cp_tabs[4].random_point(), mouseSpeed=self.mouse_speed)
         self.mouse.click()
@@ -121,7 +127,6 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
             self.click_equipment()
         else:
             return
-
 
     def check_equiptment(self):
         angler_hat = imsearch.BOT_IMAGES.joinpath("angler_images", "Angler_hat.png")
@@ -151,10 +156,36 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
 
         self.log_msg(f"You have on {total_angler_outfit_pieces}/4 Angler Set pieces, a {rounded_outfit_xp_bonus}% XP Bonus")
         
+    def check_inventory(self):
+        pass
+
+    def check_sandworms(self):
+        #bank image didn't work/Scraped my own # cut 2 pixels off the top
+        sandworms = imsearch.BOT_IMAGES.joinpath("angler_images", "Sandworms_inv.png")     
+        sandworms_in_inv = imsearch.search_img_in_rect(sandworms, self.win.control_panel) 
+
+        if sandworms_in_inv:
+            self.log_msg("Sandworms Found in Inv")    
+            for i in range(28):
+                sandworm_found = imsearch.search_img_in_rect(sandworms, self.win.inventory_slots[i])                
+                if sandworm_found is not None:
+                    #if find the slot sandworms are at, counts them, then updates self.sandworms
+                    self.log_msg(f"Sandworms At Inv slot{i+1}")
+                    sandworm_count_extr = ocr.extract_text(self.win.inventory_slots[i],ocr.PLAIN_11,clr.YELLOW) #OCR getting the Number in a stack
+                    cleaned_sandworm_count = int(sandworm_count_extr.replace('O', '').replace('o', '')) #Fixing OCRs mistakes with 0s/Os                         
+                    self.sandworm_count = cleaned_sandworm_count # Updating self.sandworm_Count
+                    formatted_count = f"{self.sandworm_count:,}"
+                    self.log_msg(f"Total Sandworm count: {formatted_count}!")
+                    break
+        else:
+            self.log_msg("No Sandworms found in Inv")
+            self.sandworm_count == 0
 
             
-        
+            #something is wrong with the number counter
+            
 
+        
 
 
 

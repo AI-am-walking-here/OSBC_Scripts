@@ -75,13 +75,21 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
         while time.time() - start_time < end_time:
 
             ### ----- Perform bot actions below here ----- ####
- 
+            #The bot should start at the bank after the player has gotten the inventory set up and input bank pin
+            
 
-            #TODO Setup cam
-            #TODO click fishing spot
+            # Setup cam
+                # self.camera_setup()
+            # click fishing spot works
+                # self.click_angler_spot()
             #TODO move when spot moves
-            #TODO when full click minimap from fishing
-            #TODO Open bank
+            # when full click minimap from fishing
+                # self.click_minimap_from_fishing_spot()
+                # time.sleep(10)
+                # self.click_minimap_from_bank()
+                # time.sleep(10)
+            #Open bank
+                # self.open_bank()
             #TODO depo fish and barrel
             #TODO click minimap from bank
         
@@ -119,7 +127,13 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
         pyautogui.keyDown('up')
         time.sleep(random.randint(1010,1300)/1000)
         pyautogui.keyUp('up')        
-  
+
+    def compass_north(self):
+        #Same as set_compass_nort(), but allows me to adjust speed.
+        self.log_msg("Setting compass North...")
+        self.mouse.move_to(self.win.compass_orb.random_point(),mouseSpeed="fast")
+        self.mouse.click()
+
     def scroll_down_main_window(self):
         # Scrolls out in the main screen used in camera_setup()
         main_window = self.win.game_view
@@ -144,12 +158,6 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
             random_scroll_speed = random.choice([0.001, 0.002])
             time.sleep(random_scroll_speed)
 
-    def compass_north(self):
-        #Same as set_compass_nort(), but allows me to adjust speed.
-        self.log_msg("Setting compass North...")
-        self.mouse.move_to(self.win.compass_orb.random_point(),mouseSpeed="fast")
-        self.mouse.click()
-
     def click_angler_spot(self):
         # Clicks fishing spot by searching for angler icon
         fishing_spot_icon = imsearch.BOT_IMAGES.joinpath("angler_images", "angler_icon.png")
@@ -166,7 +174,35 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
             time.sleep(1)
             return self.click_angler_spot()
         
+    def click_minimap_from_bank(self):
+        #clicks fishing spot by searching for angler icon
+        bank_minimap_location = imsearch.BOT_IMAGES.joinpath("angler_images", "minimap_at_bank.png")
+        bank_location_rect = imsearch.search_img_in_rect(bank_minimap_location, self.win.minimap)
+        #If the color recognition bot fails it will run the command again    
+        try:
+            self.mouse.move_to(bank_location_rect.random_point(), mouseSpeed=self.mouse_speed)
+            self.mouse.click()
+        except AttributeError:
+            self.log_msg("AttributeError occurred. Retrying click_minimap_from_bank...")
+            time.sleep(1)
+            return self.click_minimap_from_bank()
+        
+    def click_minimap_from_fishing_spot(self):
+        #clicks fishing spot by searching for angler icon
+        fishing_minimap_location = imsearch.BOT_IMAGES.joinpath("angler_images", "minimap_at_fishing.png")
+        print('set photo')
+        fishing_location_rect = imsearch.search_img_in_rect(fishing_minimap_location, self.win.minimap)
+        print('search phtoto')
+        print(type(fishing_location_rect))
+        #If the color recognition bot fails it will run the command again    
 
+        try:
+            self.mouse.move_to(fishing_location_rect.random_point(), mouseSpeed=self.mouse_speed)
+            self.mouse.click()
+        except AttributeError:
+            self.log_msg("AttributeError occurred. Retrying click_minimap_from_fishing_spot...")
+            time.sleep(1)
+            return self.click_minimap_from_fishing_spot()
 
 
 
@@ -261,31 +297,9 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
 
 ### ----- Below Functions are Broken ----- ###
 
-    def click_minimap_from_bank(self):
-        #clicks fishing spot by searching for angler icon
-        bank_minimap_location = imsearch.BOT_IMAGES.joinpath("angler_images", "minimap_at_bank.png")
-        bank_location_rect = imsearch.search_img_in_rect(bank_minimap_location, self.win.minimap)
-        #If the color recognition bot fails it will run the command again    
-        try:
-            self.mouse.move_to(bank_location_rect.random_point(), mouseSpeed=self.mouse_speed)
-            self.mouse.click()
-        except AttributeError:
-            self.log_msg("AttributeError occurred. Retrying click_minimap_from_bank...")
-            time.sleep(1)
-            return self.click_minimap_from_bank()
+
         
-    def click_minimap_from_fishing_spot(self):
-        #clicks fishing spot by searching for angler icon
-        fishing_minimap_location = imsearch.BOT_IMAGES.joinpath("angler_images", "minimap_at_fishing.png")
-        fishing_location_rect = imsearch.search_img_in_rect(fishing_minimap_location, self.win.minimap)
-        #If the color recognition bot fails it will run the command again    
-        try:
-            self.mouse.move_to(fishing_location_rect.random_point(), mouseSpeed=self.mouse_speed)
-            self.mouse.click()
-        except AttributeError:
-            self.log_msg("AttributeError occurred. Retrying click_minimap_from_fishing_spot...")
-            time.sleep(1)
-            return self.click_minimap_from_fishing_spot()
+
         
     def depo_angler(self):
         # Clicks fishing spot by searching for angler icon

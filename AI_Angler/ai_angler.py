@@ -14,6 +14,7 @@ import utilities.api.item_ids as ids
 import utilities.color as clr
 import utilities.random_util as rd
 from model.osrs.osrs_bot import OSRSBot
+from deprecated import deprecated
 
 
 
@@ -37,7 +38,6 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
     def create_options(self):
         # Creates the UI options at startup, running time is [1minute to 6hrs], option to hop when players are nearby the bot   
         self.options_builder.add_slider_option("running_time", "How long to run (minutes)?", 1, 360)
-
 
     def save_options(self, options: dict):
         # Saves the Running Time and the Hop When Player Nearby options
@@ -75,13 +75,16 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
         while time.time() - start_time < end_time:
 
             ### ----- Perform bot actions below here ----- ####
-            self.check_sandworms()
-            # self.camera_setup()
-            # self.click_equipment()
-            # self.check_equiptment()
-            # self.open_inventory()
+ 
 
-                 
+            #TODO Setup cam
+            #TODO click fishing spot
+            #TODO move when spot moves
+            #TODO when full click minimap from fishing
+            #TODO Open bank
+            #TODO depo fish and barrel
+            #TODO click minimap from bank
+        
             
             self.update_progress((time.time() - start_time) / end_time)
             ### ----- Perform bot actions above here ----- ####
@@ -91,7 +94,6 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
         self.log_msg("Finished.")
         self.logout()
         self.stop()
-
 
     def open_bank(self):
         #Clicks Yellopw marker for epen bank
@@ -108,89 +110,6 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
             self.log_msg("AttributeError occurred. Retrying click_bank...")
             time.sleep(1)
             return self.open_bank()
-
-    def open_inventory(self):
-        # Clicks the inv icon on the control panel
-        self.log_msg("Opening Inventory...")
-        self.mouse.move_to(self.win.cp_tabs[3].random_point(), mouseSpeed=self.mouse_speed)
-        self.mouse.click()
-        
-
-    def click_equipment(self):
-        # Clicks the equipment icon on the control panel and searches to make sure it is complete
-        self.log_msg("Opening Equipment...")
-        self.mouse.move_to(self.win.cp_tabs[4].random_point(), mouseSpeed=self.mouse_speed)
-        self.mouse.click()
-        equipment_on = imsearch.BOT_IMAGES.joinpath("angler_images", "tab_equipment_on.png")
-        equipment_is_open = imsearch.search_img_in_rect(equipment_on, self.win.control_panel)
-        if equipment_is_open is None:
-            self.click_equipment()
-        else:
-            return
-
-    def check_equiptment(self):
-        angler_hat = imsearch.BOT_IMAGES.joinpath("angler_images", "Angler_hat.png")
-        angler_top = imsearch.BOT_IMAGES.joinpath("angler_images", "Angler_top.png")
-        angler_waders = imsearch.BOT_IMAGES.joinpath("angler_images", "Angler_waders.png")
-        angler_boots = imsearch.BOT_IMAGES.joinpath("angler_images", "Angler_boots.png")
-
-        angler_hat_is_on = imsearch.search_img_in_rect(angler_hat, self.win.control_panel)
-        angler_top_is_on = imsearch.search_img_in_rect(angler_top, self.win.control_panel)
-        angler_waders_is_on = imsearch.search_img_in_rect(angler_waders, self.win.control_panel)
-        angler_boots_is_on = imsearch.search_img_in_rect(angler_boots, self.win.control_panel)
-        
-        if angler_hat_is_on is not None:
-            self.angler_hat = 1
-        if angler_top_is_on is not None:
-            self.angler_top = 1
-        if angler_waders_is_on is not None:
-            self.angler_waders = 1
-        if angler_boots_is_on is not None:
-            self.angler_boots = 1
-
-        total_angler_outfit_pieces = self.angler_hat + self.angler_top + self.angler_waders + self.angler_boots
-        outfit_xp_bonus = (self.angler_hat * 0.4) + (self.angler_top * 0.8) + (self.angler_waders * 0.6) + (self.angler_boots * 0.2) 
-        if total_angler_outfit_pieces == 4:
-            outfit_xp_bonus += 0.5
-        rounded_outfit_xp_bonus = round(outfit_xp_bonus,1)
-
-        self.log_msg(f"You have on {total_angler_outfit_pieces}/4 Angler Set pieces, a {rounded_outfit_xp_bonus}% XP Bonus")
-        
-    def check_inventory(self):
-        pass
-
-    def check_sandworms(self):
-        #bank image didn't work/Scraped my own # cut 2 pixels off the top
-        sandworms = imsearch.BOT_IMAGES.joinpath("angler_images", "Sandworms_inv.png")     
-        sandworms_in_inv = imsearch.search_img_in_rect(sandworms, self.win.control_panel) 
-
-        if sandworms_in_inv:
-            self.log_msg("Sandworms Found in Inv")    
-            for i in range(28):
-                sandworm_found = imsearch.search_img_in_rect(sandworms, self.win.inventory_slots[i])                
-                if sandworm_found is not None:
-                    #if find the slot sandworms are at, counts them, then updates self.sandworms
-                    self.log_msg(f"Sandworms At Inv slot{i+1}")
-                    sandworm_count_extr = ocr.extract_text(self.win.inventory_slots[i],ocr.PLAIN_11,clr.YELLOW) #OCR getting the Number in a stack
-                    cleaned_sandworm_count = int(sandworm_count_extr.replace('O', '').replace('o', '')) #Fixing OCRs mistakes with 0s/Os                         
-                    self.sandworm_count = cleaned_sandworm_count # Updating self.sandworm_Count
-                    formatted_count = f"{self.sandworm_count:,}"
-                    self.log_msg(f"Total Sandworm count: {formatted_count}!")
-                    break
-        else:
-            self.log_msg("No Sandworms found in Inv")
-            self.sandworm_count == 0
-
-            
-            #something is wrong with the number counter
-            
-
-        
-
-
-
-
-
 
     def camera_setup(self):        
         # Sets camera facing south, then moves up to a bird eyes view
@@ -231,7 +150,6 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
         self.mouse.move_to(self.win.compass_orb.random_point(),mouseSpeed="fast")
         self.mouse.click()
 
-
     def click_angler_spot(self):
         # Clicks fishing spot by searching for angler icon
         fishing_spot_icon = imsearch.BOT_IMAGES.joinpath("angler_images", "angler_icon.png")
@@ -248,6 +166,101 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
             time.sleep(1)
             return self.click_angler_spot()
         
+
+
+
+
+
+
+### ----- Below Functions are Unused ----- ###
+
+    def open_inventory_tab(self):
+        # Clicks the inv icon on the control panel
+        self.log_msg("Opening Inventory...")
+        self.mouse.move_to(self.win.cp_tabs[3].random_point(), mouseSpeed=self.mouse_speed)
+        self.mouse.click()
+  
+    def check_angler_equiptment(self):
+        angler_hat = imsearch.BOT_IMAGES.joinpath("angler_images", "Angler_hat.png")
+        angler_top = imsearch.BOT_IMAGES.joinpath("angler_images", "Angler_top.png")
+        angler_waders = imsearch.BOT_IMAGES.joinpath("angler_images", "Angler_waders.png")
+        angler_boots = imsearch.BOT_IMAGES.joinpath("angler_images", "Angler_boots.png")
+
+        angler_hat_is_on = imsearch.search_img_in_rect(angler_hat, self.win.control_panel)
+        angler_top_is_on = imsearch.search_img_in_rect(angler_top, self.win.control_panel)
+        angler_waders_is_on = imsearch.search_img_in_rect(angler_waders, self.win.control_panel)
+        angler_boots_is_on = imsearch.search_img_in_rect(angler_boots, self.win.control_panel)
+        
+        if angler_hat_is_on is not None:
+            self.angler_hat = 1
+        if angler_top_is_on is not None:
+            self.angler_top = 1
+        if angler_waders_is_on is not None:
+            self.angler_waders = 1
+        if angler_boots_is_on is not None:
+            self.angler_boots = 1
+
+        total_angler_outfit_pieces = self.angler_hat + self.angler_top + self.angler_waders + self.angler_boots
+        outfit_xp_bonus = (self.angler_hat * 0.4) + (self.angler_top * 0.8) + (self.angler_waders * 0.6) + (self.angler_boots * 0.2) 
+        if total_angler_outfit_pieces == 4:
+            outfit_xp_bonus += 0.5
+        rounded_outfit_xp_bonus = round(outfit_xp_bonus,1)
+
+        self.log_msg(f"You have on {total_angler_outfit_pieces}/4 Angler Set pieces, a {rounded_outfit_xp_bonus}% XP Bonus")
+
+    def click_equipment_tab(self):
+        # Clicks the equipment icon on the control panel and searches to make sure it is complete
+        self.log_msg("Opening Equipment...")
+        self.mouse.move_to(self.win.cp_tabs[4].random_point(), mouseSpeed=self.mouse_speed)
+        self.mouse.click()
+        equipment_on = imsearch.BOT_IMAGES.joinpath("angler_images", "tab_equipment_on.png")
+        equipment_is_open = imsearch.search_img_in_rect(equipment_on, self.win.control_panel)
+        if equipment_is_open is None:
+            self.click_equipment_tab()
+        else:
+            return
+                
+    def check_sandworms(self):
+        #bank image didn't work/Scraped my own # cut 2 pixels off the top
+        sandworms = imsearch.BOT_IMAGES.joinpath("angler_images", "Sandworms_inv.png")     
+        sandworms_in_inv = imsearch.search_img_in_rect(sandworms, self.win.control_panel) 
+
+        if sandworms_in_inv:
+            self.log_msg("Sandworms Found in Inv")    
+            for i in range(28):
+                sandworm_found = imsearch.search_img_in_rect(sandworms, self.win.inventory_slots[i])                
+                if sandworm_found is not None:
+                    #if find the slot sandworms are at, counts them, then updates self.sandworms
+                    self.log_msg(f"Sandworms At Inv slot{i+1}")
+                    sandworm_count_extr = ocr.extract_text(self.win.inventory_slots[i],ocr.PLAIN_11,clr.YELLOW) #OCR getting the Number in a stack
+                    cleaned_sandworm_count = int(sandworm_count_extr.replace('O', '').replace('o', '')) #Fixing OCRs mistakes with 0s/Os                         
+                    self.sandworm_count = cleaned_sandworm_count # Updating self.sandworm_Count
+                    formatted_count = f"{self.sandworm_count:,}"
+                    self.log_msg(f"Total Sandworm count: {formatted_count}!")
+                    break
+        else:
+            self.log_msg("No Sandworms found in Inv")
+            self.sandworm_count == 0
+
+    def deposit_inv(self):
+        #clicks the deposit button
+        deposit_inv = imsearch.BOT_IMAGES.joinpath("angler_images", "bank_depo_inv.png")     
+        deposit_inv_button = imsearch.search_img_in_rect(deposit_inv, self.win.game_view) 
+        try:
+            self.mouse.move_to(deposit_inv_button.random_point(), mouseSpeed=self.mouse_speed)
+            self.mouse.click()
+
+        except AttributeError:
+            self.log_msg("AttributeError occurred. Retrying deposit_inv...")
+            time.sleep(1)
+            return self.deposit_inv()
+
+
+
+
+
+### ----- Below Functions are Broken ----- ###
+
     def click_minimap_from_bank(self):
         #clicks fishing spot by searching for angler icon
         bank_minimap_location = imsearch.BOT_IMAGES.joinpath("angler_images", "minimap_at_bank.png")
@@ -273,15 +286,48 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
             self.log_msg("AttributeError occurred. Retrying click_minimap_from_fishing_spot...")
             time.sleep(1)
             return self.click_minimap_from_fishing_spot()
+        
+    def depo_angler(self):
+        # Clicks fishing spot by searching for angler icon
+        fishing_spot_icon = imsearch.BOT_IMAGES.joinpath("angler_images", "angler_icon.png")
+        fishing_spot_location = imsearch.search_img_in_rect(fishing_spot_icon, self.win.control_panel)
+        #If the color recognition bot fails it will run the command again    
+        try:
+            self.mouse.move_to(fishing_spot_location.random_point(), mouseSpeed=self.mouse_speed)
+            click_result = self.mouse.click(check_red_click=True)
+        
+        except AttributeError:
+            self.log_msg("AttributeError occurred. Retrying click_angler_spot...")
+            time.sleep(1)
+            return self.depo_angler()  
+
+    def deposit_raw_angler(self):       
+        raw_angler_img = imsearch.BOT_IMAGES.joinpath("angler_images", "angler_icon.png")
+        raw_angler = imsearch.search_img_in_rect(raw_angler_img, self.win.game_view)
+        #If the color recognition bot fails it will run the command again    
+        try:
+            self.mouse.move_to(raw_angler.random_point(), mouseSpeed=self.mouse_speed)
+            self.mouse.click()
+            
+        except AttributeError:
+            self.log_msg("AttributeError occurred. Retrying click_angler_spot...")
+            time.sleep(1)
+            return self.deposit_raw_angler()
+
+    def deposit_open_barrel(self):       
+        open_barrel_img = imsearch.BOT_IMAGES.joinpath("angler_images", "open_fishing_barrel.png")
+        open_barrel = imsearch.search_img_in_rect(open_barrel_img, self.win.game_view)
+        #If the color recognition bot fails it will run the command again    
+        try:
+            self.mouse.move_to(open_barrel.random_point(), mouseSpeed=self.mouse_speed)
+            self.mouse.click()
+            
+        except AttributeError:
+            self.log_msg("AttributeError occurred. Retrying click_angler_spot...")
+            time.sleep(1)
+            return self.deposit_open_barrel()
 
 
-#Bank click_bank()
-###deposit inventory need to remove everything that isn't needed
-###fish barrel open/close, 
-###if barrrel closed open it
-###
-#
-#
-#
-#
-#
+
+
+        

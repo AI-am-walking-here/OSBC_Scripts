@@ -14,7 +14,7 @@ import utilities.api.item_ids as ids
 import utilities.color as clr
 import utilities.random_util as rd
 from model.osrs.osrs_bot import OSRSBot
-from deprecated import deprecated
+
 
 
 
@@ -77,7 +77,7 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
             ### ----- Perform bot actions below here ----- ####
             #The bot should start at the bank after the player has gotten the inventory set up and input bank pin
             
-
+            time.sleep(5)
             # Setup cam
                 # self.camera_setup()
             # click fishing spot works
@@ -91,6 +91,7 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
             #Open bank
                 # self.open_bank()
             #TODO depo fish and barrel
+            self.depo_angler_and_barrel()
             #TODO click minimap from bank
         
             
@@ -204,6 +205,32 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
             time.sleep(1)
             return self.click_minimap_from_fishing_spot()
 
+    def depo_angler_and_barrel(self):
+        raw_angler_img = imsearch.BOT_IMAGES.joinpath("angler_images", "angler_icon.png")
+        fish_barrel_img = imsearch.BOT_IMAGES.joinpath("angler_images", "open_fishing_barrel.png")
+        raw_angler = imsearch.search_img_in_rect(raw_angler_img , self.win.control_panel)
+        fish_barrel = imsearch.search_img_in_rect(fish_barrel_img, self.win.control_panel)
+
+        self.mouse.move_to(raw_angler.random_point(), mouse_speed=self.mouse_speed)
+        self.mouse.click()
+        self.mouse.move_to(fish_barrel.random_point(), mouse_speed=self.mouse_speed)
+        self.mouse.click()
+        time.sleep(rd.fancy_normal_sample(700, 1400) / 1000)
+        esc_or_map_choice = random.randint(1,5)
+        if esc_or_map_choice == 1:
+            pyautogui.keyDown('esc')
+            time.sleep(rd.fancy_normal_sample(120,170)/1000)
+            pyautogui.keyUp('esc')
+            self.click_minimap_from_bank()
+        else:
+            self.click_minimap_from_bank()
+        
+
+        
+
+
+            
+       
 
 
 

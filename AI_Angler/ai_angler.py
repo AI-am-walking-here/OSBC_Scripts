@@ -77,12 +77,13 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
             ### ----- Perform bot actions below here ----- ####
             #The bot should start at the bank after the player has gotten the inventory set up and input bank pin
             
-            time.sleep(5)
+            
             # Setup cam
                 # self.camera_setup()
             # click fishing spot works
                 # self.click_angler_spot()
-            #TODO move when spot moves
+            # move when spot moves
+                # self.idle_fishing_check()
             # when full click minimap from fishing
                 # self.click_minimap_from_fishing_spot()
                 # time.sleep(10)
@@ -90,9 +91,11 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
                 # time.sleep(10)
             #Open bank
                 # self.open_bank()
-            #TODO depo fish and barrel
-            self.depo_angler_and_barrel()
-            #TODO click minimap from bank
+            #depo fish and barrel
+                # self.depo_angler_and_barrel()
+            #click minimap from fishingspot
+            #TODO Check for full
+            
         
             
             self.update_progress((time.time() - start_time) / end_time)
@@ -225,7 +228,15 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
         else:
             self.click_minimap_from_bank()
         
-
+    def idle_fishing_check(self):
+        not_fishing_text = ocr.find_text("NOT", self.win.game_view, ocr.PLAIN_12, clr.RED)
+        print(type(not_fishing_text))
+        if not_fishing_text == None:
+            return
+        else:
+            pass
+            # check for fulll
+            # if false fish again
         
 
 

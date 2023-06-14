@@ -32,7 +32,7 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
 
         self.sandworm_count = 0
 
-        self.running_time = 180
+        self.running_time = 360
         self.mouse_speed = "fast"       
 
     def create_options(self):
@@ -65,8 +65,8 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
         )
 
     def main_loop(self):
-        # Main loop where the bot functions       
-        # Put launch setup code here
+        #Setup Code
+        self.camera_setup()
 
 
         # Main loop
@@ -78,6 +78,14 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
             #The bot should start at the bank after the player has gotten the inventory set up and input bank pin
             
             
+            
+            self.fishing_loop()
+            self.click_minimap_from_fishing_spot()
+            time.sleep(rd.fancy_normal_sample(8000,10000)/1000)
+            self.open_bank()
+            time.sleep(rd.fancy_normal_sample(8000,10000)/1000)
+            self.depo_angler_and_barrel()
+            time.sleep(rd.fancy_normal_sample(8000,10000)/1000)
             # Setup cam
                 # self.camera_setup()
             # click fishing spot works
@@ -94,7 +102,8 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
             #depo fish and barrel
                 # self.depo_angler_and_barrel()
             #click minimap from fishingspot
-            #TODO Check for full
+            # Check for full
+            
             
         
             
@@ -173,6 +182,7 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
             if not click_result:
                 self.click_angler_spot()
                 self.log_msg("Didn't see red click, clicking again...")
+            return "check_idle"
         except AttributeError:
             self.log_msg("AttributeError occurred. Retrying click_angler_spot...")
             time.sleep(1)
@@ -229,16 +239,50 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
             self.click_minimap_from_bank()
         
     def idle_fishing_check(self):
-        not_fishing_text = ocr.find_text("NOT", self.win.game_view, ocr.PLAIN_12, clr.RED)
-        print(type(not_fishing_text))
-        if not_fishing_text == None:
-            return
+        #Checks the NOT in 'NOT fishing' and if you are fishing, it ignores
+        print("idle checking")
+        time.sleep(rd.fancy_normal_sample(2000,6000)/1000)
+        not_fishing_text = ocr.find_text("NOT", self.win.game_view, ocr.PLAIN_12, clr.RED)        
+        if not_fishing_text == []: 
+            print("still finsin")           
+            return "check_idle"
         else:
-            pass
+            print("idle")
+            return "check_inv"
             # check for fulll
             # if false fish again
         
+    def check_is_inv_full(self):
+        #Checks the Chat for 'any more fish' if it does not come up goes to bank
+        inv_full_text = ocr.find_text("any more fish", self.win.chat, ocr.QUILL_8, clr.BLACK)
+        if inv_full_text == []:
+            print("inv not full")            
+            return "fish"
+        else:
+            time.sleep(rd.fancy_normal_sample(2000,4000)/1000)
+            print("full inventory")
+            return "go_bank"
+             
 
+    def fishing_loop(self):       
+        todo_activity = "fish"
+        while True:            
+            if todo_activity == "fish":
+                print("todo_activity == fish")
+                todo_activity = self.click_angler_spot()
+                time.sleep(rd.fancy_normal_sample(8000,10000)/1000) #Wait to run to fishing spot 8-10 seconds
+            if todo_activity =="check_idle":
+                print("todo_activity == idle")
+                todo_activity =self.idle_fishing_check()
+            if todo_activity == "check_inv":
+                print("todo_activity == inv")
+                todo_activity =self.check_is_inv_full()
+            if todo_activity == "go_bank":
+                print("todo_activity == bank")
+                break
+            
+
+        
 
             
        

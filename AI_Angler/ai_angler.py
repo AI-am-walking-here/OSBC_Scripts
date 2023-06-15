@@ -86,24 +86,6 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
             time.sleep(rd.fancy_normal_sample(8000,10000)/1000)
             self.depo_angler_and_barrel()
             time.sleep(rd.fancy_normal_sample(8000,10000)/1000)
-            # Setup cam
-                # self.camera_setup()
-            # click fishing spot works
-                # self.click_angler_spot()
-            # move when spot moves
-                # self.idle_fishing_check()
-            # when full click minimap from fishing
-                # self.click_minimap_from_fishing_spot()
-                # time.sleep(10)
-                # self.click_minimap_from_bank()
-                # time.sleep(10)
-            #Open bank
-                # self.open_bank()
-            #depo fish and barrel
-                # self.depo_angler_and_barrel()
-            #click minimap from fishingspot
-            # Check for full
-            
             
         
             
@@ -117,7 +99,7 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
         self.stop()
 
     def open_bank(self):
-        #Clicks Yellopw marker for epen bank
+        #Clicks Yellow marker for open bank
         bank = self.get_nearest_tag(clr.YELLOW)
         
         #Trys to click bank, if the color recognition bot fails it will run the command again    
@@ -133,13 +115,14 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
             return self.open_bank()
 
     def camera_setup(self):        
-        # Sets camera facing south, then moves up to a bird eyes view
+        # Sets camera facing south
         self.compass_north()
         self.scroll_down_minimap()
         self.scroll_down_main_window()
-        pyautogui.keyDown('up')
-        time.sleep(random.randint(1010,1300)/1000)
-        pyautogui.keyUp('up')        
+        
+        # pyautogui.keyDown('up') # scroll to far up its hard to see bank
+        # time.sleep(random.randint(1010,1300)/1000)
+        # pyautogui.keyUp('up')        
 
     def compass_north(self):
         #Same as set_compass_nort(), but allows me to adjust speed.
@@ -178,7 +161,7 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
         #If the color recognition bot fails it will run the command again    
         try:
             self.mouse.move_to(fishing_spot_location.random_point(), mouseSpeed=self.mouse_speed)
-            click_result = self.mouse.click(check_red_click=True)
+            click_result = self.mouse.click(check_red_click=True) #Checks red click and if false clicks again
             if not click_result:
                 self.click_angler_spot()
                 self.log_msg("Didn't see red click, clicking again...")
@@ -189,7 +172,7 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
             return self.click_angler_spot()
         
     def click_minimap_from_bank(self):
-        #clicks fishing spot by searching for angler icon
+        #clicks the minimap from the location of the bank, image searches and clicks found rectangle
         bank_minimap_location = imsearch.BOT_IMAGES.joinpath("angler_images", "minimap_at_bank.png")
         bank_location_rect = imsearch.search_img_in_rect(bank_minimap_location, self.win.minimap)
         #If the color recognition bot fails it will run the command again    
@@ -202,7 +185,7 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
             return self.click_minimap_from_bank()
         
     def click_minimap_from_fishing_spot(self):
-        #clicks fishing spot by searching for angler icon
+        #clicks the minimap from the location of the fishing spot, image searches and clicks found rectangle
         fishing_minimap_location = imsearch.BOT_IMAGES.joinpath("angler_images", "minimap_at_fishing.png")
         print('set photo')
         fishing_location_rect = imsearch.search_img_in_rect(fishing_minimap_location, self.win.minimap)
@@ -219,6 +202,7 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
             return self.click_minimap_from_fishing_spot()
 
     def depo_angler_and_barrel(self):
+        #image searches the angler and barrel, then clicks both
         raw_angler_img = imsearch.BOT_IMAGES.joinpath("angler_images", "angler_icon.png")
         fish_barrel_img = imsearch.BOT_IMAGES.joinpath("angler_images", "open_fishing_barrel.png")
         raw_angler = imsearch.search_img_in_rect(raw_angler_img , self.win.control_panel)
@@ -229,7 +213,7 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
         self.mouse.move_to(fish_barrel.random_point(), mouse_speed=self.mouse_speed)
         self.mouse.click()
         time.sleep(rd.fancy_normal_sample(700, 1400) / 1000)
-        esc_or_map_choice = random.randint(1,5)
+        esc_or_map_choice = random.randint(1,5) #randomly chooses to esc to close or just click minimap out
         if esc_or_map_choice == 1:
             pyautogui.keyDown('esc')
             time.sleep(rd.fancy_normal_sample(120,170)/1000)
@@ -261,10 +245,10 @@ class AnglerFisher(OSRSBot, launcher.Launchable):
         else:
             time.sleep(rd.fancy_normal_sample(2000,4000)/1000)
             print("full inventory")
-            return "go_bank"
-             
+            return "go_bank"       
 
-    def fishing_loop(self):       
+    def fishing_loop(self):      
+        #goes though the various function and loops through assaingning tasks until something breaks it then starts over 
         todo_activity = "fish"
         while True:            
             if todo_activity == "fish":

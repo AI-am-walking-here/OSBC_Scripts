@@ -26,8 +26,8 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
         Leaves the bank menu using 'ESC' key or top-right '[X]'.
 
         Args:
-            close: 'esc'/'escape/ or 'click' (default = 'esc')
-            logs: Logs messages throughout the function (default = False)
+            close: 'esc'/'escape/ or 'click' method of closing the bank (default = 'esc')
+            logs: (T/F) Logs messages throughout the function (default = False)
         
         """
         close = close.lower

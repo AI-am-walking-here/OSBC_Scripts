@@ -207,9 +207,18 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
                 try:
                     self.mouse.move_to(bank_x_off.random_point(), mouseSpeed=self.mouse_speed)
                     self.mouse.right_click()
+                    set_custom_quantity_dropbox = ocr.find_text("custom",self.win.game_view,ocr.BOLD_12,clr.WHITE)
+                    self.mouse.move_to(set_custom_quantity_dropbox.random_point(), mouseSpeed=self.mouse_speed)
+                    self.mouse.click()
+                    time.sleep(rd.fancy_normal_sample(150,250)/1000) # Natural mental processing speed break before typing
+
+                    for digit in x: # Presses the custom quantity with natural presses
+                        key = 'num' + digit            
+                        pag.keyDown(key)
+                        time.sleep(rd.fancy_normal_sample(150,250)/1000) # Key down time
+                        pag.keyUp(key)
+                        time.sleep(rd.fancy_normal_sample(150,250)/1000) # Time Between clicks
                     self.log_msg(f"Bank Quantity Set to {button}={x}")
-
-
                     self.bank_custom_quantity_set = True
                     return self.bank_custom_quantity_set
 

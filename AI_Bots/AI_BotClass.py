@@ -94,7 +94,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             pin_entered = True #Returns pin_entered True so the while loop will wait for the pin interface to close without looping again 
             return pin_entered
             
-    def deposit_quantity_set(self,quantity, x=14):
+    def deposit_quantity_set(self, quantity, x=14):
         """
         Leaves the bank menu using 'ESC' key or top-right '[X]'.
 
@@ -103,16 +103,17 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             x : Custom Quantity Number (Default = 14") 
                     
         """
-        
+        # Converts string to lower for edge cases
         button = quantity.lower()
 
+        # Image loading
         bank_1_on_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_1_on.png")
         bank_1_off_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_1_off.png")
         bank_5_on_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_5_on.png")
         bank_5_off_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_5_off.png")
         bank_10_on_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_10_on.png")
         bank_10_off_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_10_off.png")
-        bank_x_on_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_x_on.png")
+        bank_x_on_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_x_on.png") # Not currently used
         bank_x_off_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_x_off.png")
         bank_all_on_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_all_on.png")
         bank_all_off_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_all_off.png")
@@ -193,8 +194,6 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
                     self.log_msg(f"Couldn't find image of '{button}' quantity, ending script")
                     raise SystemExit #Gracefully stops the script if pin isnt 4 characters
 
-
-
         elif button == 'x':
 
             #If the quantity was set earlier skip over function
@@ -227,7 +226,19 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
                     self.log_msg(f"Couldn't find image of '{button}' quantity, ending script")
                     raise SystemExit #Gracefully stops the script if pin isnt 4 characters
     
+    def quick_deposit_inv(self):
+        bank_depo_inv_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_depo_inv.png")
+        bank_depo_inv = imsearch.search_img_in_rect(bank_depo_inv_image, self.win.game_view)
+        try:
+            self.mouse.move_to(bank_depo_inv.random_point(), mouseSpeed=self.mouse_speed)
+            self.mouse.click()
+        
+        except AttributeError:
+            self.log_msg("AttributeError occurred. Retrying click_angler_spot...")
+            raise SystemExit #Gracefully stops the script if deposit inventory isnt found
 
+    def quick_deposit_worn(self):
+        pass
 
         
 

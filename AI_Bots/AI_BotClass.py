@@ -7,6 +7,7 @@ import utilities.ocr as ocr
 import utilities.api.item_ids as ids
 import utilities.color as clr
 import utilities.random_util as rd
+from typing import Union
 
 from model.osrs.osrs_bot import OSRSBot, RuneLiteWindow
 import model.osrs.AI_Bots.BotSpecImageSearch as imsearch 
@@ -20,6 +21,8 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
         self.mouse_speed = "fast"
         self.pin = "1234" # Must be a string
         self.bank_custom_quantity_set = False
+        self.bank_withdraw_as = "item"
+        
 
 
     def close_bank(self, close='esc', logs=False,):
@@ -94,7 +97,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             pin_entered = True #Returns pin_entered True so the while loop will wait for the pin interface to close without looping again 
             return pin_entered
             
-    def deposit_quantity_set(self, quantity, x=14):
+    def deposit_quantity_set(self, quantity: Union[str, int], x=14):
         """
         Leaves the bank menu using 'ESC' key or top-right '[X]'.
 
@@ -104,7 +107,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
                     
         """
         # Converts string to lower for edge cases
-        button = quantity.lower()
+        button = str(quantity.lower())
 
         # Image loading
         bank_1_on_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_1_on.png")
@@ -227,20 +230,87 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
                     raise SystemExit #Gracefully stops the script if pin isnt 4 characters
     
     def quick_deposit_inv(self):
+        """
+        Quickly Deposits inventory by clicking the deposit inventory icon in the bottom right
+
+        Args: None
+        """
         bank_depo_inv_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_depo_inv.png")
         bank_depo_inv = imsearch.search_img_in_rect(bank_depo_inv_image, self.win.game_view)
         try:
+            self.log_msg("Quick Depositing Inventory")
             self.mouse.move_to(bank_depo_inv.random_point(), mouseSpeed=self.mouse_speed)
+            self.mouse.click()
+            time.sleep()
+        
+        except AttributeError:
+            self.log_msg("AttributeError occurred. can't find Quick Deposit Inventory")
+            raise SystemExit #Gracefully stops the script if deposit inventory isnt found
+        
+    def quick_deposit_worn(self):
+        """
+        Quickly Deposits Worn Items by clicking the deposit worn items icon in the bottom right
+        
+        Args: None
+        """
+        bank_depo_worn_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_depo_worn.png")
+        bank_depo_worn = imsearch.search_img_in_rect(bank_depo_worn_image, self.win.game_view)
+        try:
+            self.log_msg("Quick Depositing Worn Items")
+            self.mouse.move_to(bank_depo_worn.random_point(), mouseSpeed=self.mouse_speed)
             self.mouse.click()
         
         except AttributeError:
-            self.log_msg("AttributeError occurred. Retrying click_angler_spot...")
+            self.log_msg("AttributeError occurred. Can't find Quick Deposit Worn Items")
             raise SystemExit #Gracefully stops the script if deposit inventory isnt found
 
-    def quick_deposit_worn(self):
-        pass
-
+    def withdraw_as_note(self):
+        """
+        Clicks the withdraw as note icon to switch from items to notes. Skips if already set to notes
         
+        Args: None
+        """
+        if self.bank_withdraw_as != "note":        
+            bank_note_toggle_off_img = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_note_toggle_off.png")
+            bank_note_toggle_off = imsearch.search_img_in_rect(bank_note_toggle_off_img, self.win.game_view)
+            try:
+                self.log_msg("Clicking Bank Note Toggle ON")
+                self.mouse.move_to(bank_note_toggle_off.random_point(), mouseSpeed=self.mouse_speed)
+                self.mouse.click()
+                self.bank_withdraw_as = "note"
+                return self.bank_withdraw_as
+            
+            except AttributeError:
+                self.log_msg("AttributeError occurred. Can't find Bank Note Toggle")
+                raise SystemExit #Gracefully stops the script if deposit inventory isnt found
+        
+
+    def withdraw_as_item(self):
+        """
+        Clicks the withdraw as item icon to switch from notes to items. Skips if already set to items
+        
+        Args: None
+        """
+        if self.bank_withdraw_as != "item":        
+            bank_item_toggle_off_img = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_item_toggle_off.png")
+            bank_item_toggle_off = imsearch.search_img_in_rect(bank_item_toggle_off_img, self.win.game_view)
+            try:
+                self.log_msg("Clicking Bank item Toggle ON")
+                self.mouse.move_to(bank_item_toggle_off.random_point(), mouseSpeed=self.mouse_speed)
+                self.mouse.click()
+                self.bank_withdraw_as = "item"
+                return self.bank_withdraw_as
+            
+            except AttributeError:
+                self.log_msg("AttributeError occurred. Can't find Bank item Toggle")
+                raise SystemExit #Gracefully stops the script if deposit inventory isnt found
+
+
+
+
+
+
+
 
 
         

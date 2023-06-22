@@ -59,7 +59,6 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             self.log_msg("AttributeError occurred. Retrying click_angler_spot...")
             time.sleep(2)
             return self.close_bank(close,logs)
-
    
     def enter_pin(self):
         """
@@ -284,7 +283,6 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
                 self.log_msg("AttributeError occurred. Can't find Bank Note Toggle")
                 raise SystemExit #Gracefully stops the script if deposit inventory isnt found
         
-
     def withdraw_as_item(self):
         """
         Clicks the withdraw as item icon to switch from notes to items. Skips if already set to items
@@ -304,6 +302,98 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             except AttributeError:
                 self.log_msg("AttributeError occurred. Can't find Bank item Toggle")
                 raise SystemExit #Gracefully stops the script if deposit inventory isnt found
+            
+    def search_bank(self, item: str, set_quantity: Union[str, int] =1, click_times=1, x_value=14,):
+        """
+        Searches bank for desired item, clicks if avaliable. 
+        Ability to set custom quantity, number of times to click item, and set custom x quantity value.
+
+        Args:
+            item: 'item name'
+                    
+        Kwargs:
+            set_quantity: 1, 5, 10, 'all', 'x'
+            click_times: Number of times for mouse to click the item
+            x_value: custom x value when setting [x] quantity
+                    
+        """
+        quantity = str(set_quantity.lower())
+
+        if quantity == 'all':
+            self.deposit_quantity_set('all')
+        elif quantity == '1':
+            self.deposit_quantity_set('1')
+        elif quantity == '5':
+            self.deposit_quantity_set('5')
+        elif quantity == '10':
+            self.deposit_quantity_set('10')
+        elif quantity == 'x':
+            self.deposit_quantity_set('x', x= x_value)
+
+
+        item_name_png = item + ".png"
+        item_name_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images","bank_items", item_name_png)
+        item_name = imsearch.search_img_in_rect(item_name_image, self.win.game_view)
+
+        # If item is found move mouse to item
+        if item_name != None:
+            self.log_msg(f"Moving mouse to '{item}'")
+            self.mouse.move_to(item_name.random_point(), mouseSpeed=self.mouse_speed)
+
+        # If item isn't found, search bank for the item
+        elif item_name == None:
+            self.log_msg(f"Couldn't find image of '{item}' in screen, will search for it")
+            bank_search_off_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_search_off.png")
+            bank_search_off = imsearch.search_img_in_rect(bank_search_off_image, self.win.game_view)
+
+            # Move mouse to search icon and click
+            try:                
+                self.mouse.move_to(bank_search_off.random_point(), mouseSpeed=self.mouse_speed)
+                self.mouse.click()
+
+                #Loops after search icon clicked and waits for search text
+                while True:
+                    found_text = ocr.find_text("Show items",self.win.chat,ocr.BOLD_12,clr.BLACK)
+                    text_found_result = bool(found_text)
+                    # Once search text found use PyAutoGUI to type in the 'item' parameter
+                    if text_found_result is True:
+                        for char in item:
+                            time.sleep(rd.fancy_normal_sample(150,250)/1000) 
+                            pag.keyDown(char)
+                            time.sleep(rd.fancy_normal_sample(150,250)/1000)
+                            pag.keyUp(char)
+                        time.sleep(rd.fancy_normal_sample(300,600)/1000) # Natural time delay to look for searched item
+                        break
+
+                # Search for item again after typing to search
+                item_name = imsearch.search_img_in_rect(item_name_image, self.win.game_view)
+                try:
+                    self.log_msg(f"Moving mouse to '{item}'")
+                    self.mouse.move_to(item_name.random_point(), mouseSpeed=self.mouse_speed)
+                    
+
+                # If a NONE type error occurs finding the searched item, move on without item
+                except AttributeError:
+                    self.log_msg(f"Couldn't find image of '{item}', make sure it is in the bank")
+                    raise SystemExit #Gracefully stops the script if item isn't found                 
+
+            # If a NONE type error occurs finding the search icon, Cut the Script    
+            except AttributeError:
+                self.log_msg(f"Couldn't find image of search button, ending script")
+                raise SystemExit #Gracefully stops the script if search icon isn't found
+            
+    
+        # Loops number of times equal to 'click_times' parameter after image has been (found) or (searched and found)
+        for i in range(click_times):
+            self.mouse.click()
+            time.sleep(rd.fancy_normal_sample(150,250)/1000)
+
+
+            
+
+
+    
+
 
 
 

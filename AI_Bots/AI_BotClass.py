@@ -17,12 +17,11 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
     win: RuneLiteWindow = None
 
     def __init__(self, bot_title, description) -> None:
-        super().__init__("AI_BotClass", bot_title, description)
+        super().__init__(bot_title, description)
         self.mouse_speed = "fast"
         self.pin = "1234" # Must be a string
         self.bank_custom_quantity_set = False
-        self.bank_withdraw_as = "item"
-        
+        self.bank_withdraw_as = "item"    
 
 
     def close_bank(self, close='esc', logs=False,):
@@ -387,39 +386,6 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
         for i in range(click_times):
             self.mouse.click()
             time.sleep(rd.fancy_normal_sample(150,250)/1000)
-
-    def search_multiple(self):
-        import cv2 as cv
-        import numpy as np
-        from typing import List
-        from pathlib import Path
-
-        master_image_path = 
-        template_image_path = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_tag_outline.png")
-        threshold = 0.8
-
-        img_rgb = cv.imread(str(master_image_path))
-        assert img_rgb is not None, "Master image could not be read."
-
-        img_gray = cv.cvtColor(img_rgb, cv.COLOR_BGR2GRAY)
-
-        template = cv.imread(str(template_image_path), cv.IMREAD_GRAYSCALE)
-        assert template is not None, "Template image could not be read."
-
-        w, h = template.shape[::-1]
-
-        res = cv.matchTemplate(img_gray, template, cv.TM_CCOEFF_NORMED)
-
-        loc = np.where(res >= threshold)
-
-        rectangles = []
-        for pt in zip(*loc[::-1]):
-            rectangles.append(Rectangle(pt[0], pt[1], pt[0] + w, pt[1] + h))
-
-        # Process the found rectangles as needed
-        for rect in rectangles:
-            # Perform operations on each found instance
-            # ...
 
 
     

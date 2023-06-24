@@ -19,7 +19,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
     def __init__(self, bot_title, description) -> None:
         super().__init__(bot_title, description)
         self.mouse_speed = "fast"
-        self.pin = "1234" # Must be a string
+        self.pin = "7412" # Must be a string
         self.bank_custom_quantity_set = False
         self.bank_withdraw_as = "item"    
 
@@ -70,7 +70,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
         """
 
         ### add a way to scan the screen and wait for the bank interface to close to finish the function
-        close = close.lower
+        close = close.lower()
 
         if close in ['escape', 'esc']: # Close choice is 'esc'
             if logs:
@@ -82,18 +82,22 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
         elif close == 'click': # Close choice is 'close'
             if logs:
                 self.log_msg("Closing bank with 'Top-right [X]'")
+
             bank_close_button_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_close.png")
             bank_close_button = imsearch.search_img_in_rect(bank_close_button_image, self.win.game_view)
-
-        try:
-            self.mouse.move_to(bank_close_button.random_point(), mouseSpeed=self.mouse_speed)
-            self.mouse.click()
+            try:
+                self.mouse.move_to(bank_close_button.random_point(), mouseSpeed=self.mouse_speed)
+                self.mouse.click()
             
-        except AttributeError:
-            self.log_msg("AttributeError occurred. Retrying click_angler_spot...")
-            time.sleep(2)
-            return self.close_bank(close,logs)
-   
+            except AttributeError:
+                self.log_msg("AttributeError occurred. Retrying click_angler_spot...")
+                time.sleep(2)
+                return self.close_bank(close,logs)
+    
+            
+        
+
+       
     def enter_pin(self):
         """
         Enters 4-Digit PIN number.
@@ -116,11 +120,13 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
                 self.log_msg("Your pin does not meet the required length of 4 numbers")
                 raise SystemExit #Gracefully stops the script if pin isnt 4 characters
             
-            if digit not in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']:
-                self.log_msg("Your pin does not meet the required symboles [0-9]")
-                raise SystemExit #Gracefully stops the script if pin isnt 4 characters
+            
 
             for digit in self.pin: # Presses the pin with natural keystroke intervals
+                if digit not in ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']:
+                    self.log_msg("Your pin does not meet the required symboles [0-9]")
+                    raise SystemExit #Gracefully stops the script if pin isnt 4 characters
+            
                 key = 'num' + digit            
                 pag.keyDown(key)
                 time.sleep(rd.fancy_normal_sample(150,250)/1000) # Key down time
@@ -132,7 +138,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             
     def deposit_quantity_set(self, quantity: Union[str, int], x=14):
         """
-        Leaves the bank menu using 'ESC' key or top-right '[X]'.
+        sets custom quantity.
 
         Args:
             button: '1', '5', '10', 'X', or 'ALL' (case doesn't matter)
@@ -274,7 +280,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             self.log_msg("Quick Depositing Inventory")
             self.mouse.move_to(bank_depo_inv.random_point(), mouseSpeed=self.mouse_speed)
             self.mouse.click()
-            time.sleep()
+            time.sleep(rd.fancy_normal_sample(150,250)/1000)
         
         except AttributeError:
             self.log_msg("AttributeError occurred. can't find Quick Deposit Inventory")
@@ -292,6 +298,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             self.log_msg("Quick Depositing Worn Items")
             self.mouse.move_to(bank_depo_worn.random_point(), mouseSpeed=self.mouse_speed)
             self.mouse.click()
+            time.sleep(rd.fancy_normal_sample(150,250)/1000)
         
         except AttributeError:
             self.log_msg("AttributeError occurred. Can't find Quick Deposit Worn Items")
@@ -351,7 +358,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             x_value: custom x value when setting [x] quantity
                     
         """
-        quantity = str(set_quantity.lower())
+        quantity = str(set_quantity).lower()
 
         if quantity == 'all':
             self.deposit_quantity_set('all')
@@ -364,8 +371,8 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
         elif quantity == 'x':
             self.deposit_quantity_set('x', x= x_value)
 
-
-        item_name_png = item + ".png"
+        item_formated = item.replace(' ', '_')
+        item_name_png = item_formated + "_bank.png"
         item_name_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images","bank_items", item_name_png)
         item_name = imsearch.search_img_in_rect(item_name_image, self.win.game_view)
 
@@ -379,7 +386,8 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             self.log_msg(f"Couldn't find image of '{item}' in screen, will search for it")
             bank_search_off_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_search_off.png")
             bank_search_off = imsearch.search_img_in_rect(bank_search_off_image, self.win.game_view)
-
+            bank_search_on_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_search_on.png") #Used in attribution error block later
+            bank_search_on = imsearch.search_img_in_rect(bank_search_on_image, self.win.game_view)
             # Move mouse to search icon and click
             try:                
                 self.mouse.move_to(bank_search_off.random_point(), mouseSpeed=self.mouse_speed)
@@ -412,9 +420,17 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
                     raise SystemExit #Gracefully stops the script if item isn't found                 
 
             # If a NONE type error occurs finding the search icon, Cut the Script    
-            except AttributeError:
-                self.log_msg(f"Couldn't find image of search button, ending script")
-                raise SystemExit #Gracefully stops the script if search icon isn't found
+            except AttributeError:   
+                try:             
+                    self.log_msg(f"Double clicking search icon")
+                    self.mouse.move_to(bank_search_on.random_point(), mouseSpeed=self.mouse_speed)
+                    self.mouse.click()
+                    time.sleep(rd.fancy_normal_sample(90,150)/1000)
+                    self.mouse.click()
+                    time.sleep(rd.fancy_normal_sample(90,150)/1000)
+                except AttributeError:
+                    self.log_msg(f"Couldn't find image of search button, ending script")
+                    raise SystemExit #Gracefully stops the script if search icon isn't found
             
     
         # Loops number of times equal to 'click_times' parameter after image has been (found) or (searched and found)

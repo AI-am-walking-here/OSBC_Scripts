@@ -23,6 +23,41 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
         self.bank_custom_quantity_set = False
         self.bank_withdraw_as = "item"    
 
+    def open_bank(self):
+        #Clicks Yellopw marker for epen bank
+        bank = self.get_nearest_tag(clr.YELLOW)
+        
+        #Trys to click bank, if the color recognition bot fails it will run the command again    
+        try:
+            self.mouse.move_to(bank.random_point(), mouseSpeed=self.mouse_speed)
+            click_result = self.mouse.click(check_red_click=True)
+            if not click_result:
+                self.open_bank()
+                self.log_msg("Didn't see red click, clicking again...")
+        except AttributeError:
+            self.log_msg("AttributeError occurred. Retrying click_bank...")
+            time.sleep(1)
+            return self.open_bank()
+        
+        while True:
+            bank_pin_template_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_pin_template.png")
+            bank_pin_template = imsearch.search_img_in_rect(bank_pin_template_image, self.win.game_view)
+            bank_tag_layout_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_tag_layout.png")
+            bank_tag_layout = imsearch.search_img_in_rect(bank_tag_layout_image, self.win.game_view)
+
+            if bank_pin_template is None:            
+                bank_pin_template = imsearch.search_img_in_rect(bank_pin_template_image, self.win.game_view)
+            else:
+                self.enter_pin()
+                break
+
+            if bank_tag_layout is None:            
+                bank_tag_layout = imsearch.search_img_in_rect(bank_tag_layout_image, self.win.game_view)
+            else:
+                break
+        
+        
+
 
     def close_bank(self, close='esc', logs=False,):
         """

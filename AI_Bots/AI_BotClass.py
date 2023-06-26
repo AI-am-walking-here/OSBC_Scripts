@@ -133,8 +133,18 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
                 pag.keyUp(key)
                 time.sleep(rd.fancy_normal_sample(150,250)/1000) # Time Between clicks
                 
+            self.log_msg("Pin Entered")
             pin_entered = True #Returns pin_entered True so the while loop will wait for the pin interface to close without looping again 
             return pin_entered
+        while True:
+            bank_tag_layout_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_tag_layout.png")
+            bank_tag_layout = imsearch.search_img_in_rect(bank_tag_layout_image, self.win.game_view)
+
+            if bank_tag_layout is None:            
+                bank_tag_layout = imsearch.search_img_in_rect(bank_tag_layout_image, self.win.game_view)
+            else:
+                break
+        
             
     def deposit_quantity_set(self, quantity: Union[str, int], x=14):
         """
@@ -249,16 +259,18 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
                     self.mouse.move_to(bank_x_off.random_point(), mouseSpeed=self.mouse_speed)
                     self.mouse.right_click()
                     set_custom_quantity_dropbox = ocr.find_text("custom",self.win.game_view,ocr.BOLD_12,clr.WHITE)
-                    self.mouse.move_to(set_custom_quantity_dropbox.random_point(), mouseSpeed=self.mouse_speed)
-                    self.mouse.click()
-                    time.sleep(rd.fancy_normal_sample(150,250)/1000) # Natural mental processing speed break before typing
-
-                    for digit in x: # Presses the custom quantity with natural presses
-                        key = 'num' + digit            
+                    self.mouse.move_to(set_custom_quantity_dropbox[0].random_point(), mouseSpeed=self.mouse_speed)
+                    self.mouse.click()                    
+                    enter_amount_text = ocr.find_text("Enter amount",self.win.chat,ocr.BOLD_12,clr.BLACK)
+                    while enter_amount_text == []:
+                        enter_amount_text = ocr.find_text("Enter amount",self.win.chat,ocr.BOLD_12,clr.BLACK)
+                    time.sleep(rd.fancy_normal_sample(300,600)/1000) # Natural mental processing speed break before typing
+                    for digit in str(x): # Presses the custom quantity with natural presses
+                        key = 'num' + digit          
                         pag.keyDown(key)
-                        time.sleep(rd.fancy_normal_sample(150,250)/1000) # Key down time
+                        time.sleep(rd.fancy_normal_sample(90,150)/1000) # Key down time
                         pag.keyUp(key)
-                        time.sleep(rd.fancy_normal_sample(150,250)/1000) # Time Between clicks
+                        time.sleep(rd.fancy_normal_sample(90,150)/1000) # Time Between clicks
                     self.log_msg(f"Bank Quantity Set to {button}={x}")
                     self.bank_custom_quantity_set = True
                     return self.bank_custom_quantity_set
@@ -321,8 +333,20 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
                 return self.bank_withdraw_as
             
             except AttributeError:
-                self.log_msg("AttributeError occurred. Can't find Bank Note Toggle")
-                raise SystemExit #Gracefully stops the script if deposit inventory isnt found
+                self.log_msg("AttributeError occurred. Can't find Bank Note Toggle trying 1 more time")
+                time.sleep(1)
+                bank_note_toggle_off = imsearch.search_img_in_rect(bank_note_toggle_off_img, self.win.game_view)
+                try:                
+                    self.log_msg("Clicking Bank Note Toggle ON")
+                    self.mouse.move_to(bank_note_toggle_off.random_point(), mouseSpeed=self.mouse_speed)
+                    self.mouse.click()
+                    self.bank_withdraw_as = "note"
+                    return self.bank_withdraw_as
+                    
+
+                except AttributeError:
+                    self.log_msg("AttributeError occurred. Can't find Bank Note Toggle cutting script")
+                    raise SystemExit #Gracefully stops the script if deposit inventory isnt found
         
     def withdraw_as_item(self):
         """
@@ -400,9 +424,9 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
                     # Once search text found use PyAutoGUI to type in the 'item' parameter
                     if text_found_result is True:
                         for char in item:
-                            time.sleep(rd.fancy_normal_sample(150,250)/1000) 
+                            time.sleep(rd.fancy_normal_sample(90,150)/1000) 
                             pag.keyDown(char)
-                            time.sleep(rd.fancy_normal_sample(150,250)/1000)
+                            time.sleep(rd.fancy_normal_sample(90,150)/1000)
                             pag.keyUp(char)
                         time.sleep(rd.fancy_normal_sample(300,600)/1000) # Natural time delay to look for searched item
                         break
@@ -421,16 +445,42 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
 
             # If a NONE type error occurs finding the search icon, Cut the Script    
             except AttributeError:   
-                try:             
-                    self.log_msg(f"Double clicking search icon")
+                try:                
                     self.mouse.move_to(bank_search_on.random_point(), mouseSpeed=self.mouse_speed)
                     self.mouse.click()
                     time.sleep(rd.fancy_normal_sample(90,150)/1000)
                     self.mouse.click()
-                    time.sleep(rd.fancy_normal_sample(90,150)/1000)
+                    time.sleep(rd.fancy_normal_sample(90,150)/1000) 
+                    #Loops after search icon clicked and waits for search text
+                    while True:
+                        found_text = ocr.find_text("Show items",self.win.chat,ocr.BOLD_12,clr.BLACK)
+                        text_found_result = bool(found_text)
+                        # Once search text found use PyAutoGUI to type in the 'item' parameter
+                        if text_found_result is True:
+                            for char in item:
+                                time.sleep(rd.fancy_normal_sample(90,150)/1000) 
+                                pag.keyDown(char)
+                                time.sleep(rd.fancy_normal_sample(90,150)/1000)
+                                pag.keyUp(char)
+                            time.sleep(rd.fancy_normal_sample(300,600)/1000) # Natural time delay to look for searched item
+                            break
+
+                    # Search for item again after typing to search
+                    item_name = imsearch.search_img_in_rect(item_name_image, self.win.game_view)
+                    try:
+                        self.log_msg(f"Moving mouse to '{item}'")
+                        self.mouse.move_to(item_name.random_point(), mouseSpeed=self.mouse_speed)
+                        
+
+                    # If a NONE type error occurs finding the searched item, move on without item
+                    except AttributeError:
+                        self.log_msg(f"Couldn't find image of '{item}', make sure it is in the bank")
+                        raise SystemExit #Gracefully stops the script if item isn't found                 
+
+                # If a NONE type error occurs finding the search icon, Cut the Script    
                 except AttributeError:
-                    self.log_msg(f"Couldn't find image of search button, ending script")
-                    raise SystemExit #Gracefully stops the script if search icon isn't found
+                    self.log_msg(f"Couldn't find image of search icon on/off")
+                    raise SystemExit #Gracefully stops the script if item isn't found  
             
     
         # Loops number of times equal to 'click_times' parameter after image has been (found) or (searched and found)

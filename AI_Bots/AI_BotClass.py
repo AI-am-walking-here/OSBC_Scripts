@@ -7,6 +7,8 @@ import utilities.ocr as ocr
 import utilities.api.item_ids as ids
 import utilities.color as clr
 import utilities.random_util as rd
+import cv2
+from utilities.geometry import Rectangle, Point
 from typing import Union
 
 from model.osrs.osrs_bot import OSRSBot, RuneLiteWindow
@@ -56,9 +58,6 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             else:
                 break
         
-        
-
-
     def close_bank(self, close='esc', logs=False,):
         """
         Leaves the bank menu using 'ESC' key or top-right '[X]'.
@@ -93,11 +92,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
                 self.log_msg("AttributeError occurred. Retrying click_angler_spot...")
                 time.sleep(2)
                 return self.close_bank(close,logs)
-    
-            
-        
-
-       
+               
     def enter_pin(self):
         """
         Enters 4-Digit PIN number.
@@ -144,8 +139,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
                 bank_tag_layout = imsearch.search_img_in_rect(bank_tag_layout_image, self.win.game_view)
             else:
                 break
-        
-            
+             
     def deposit_quantity_set(self, quantity: Union[str, int], x=14):
         """
         sets custom quantity.
@@ -488,8 +482,35 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             self.mouse.click()
             time.sleep(rd.fancy_normal_sample(150,250)/1000)
 
+    def click_bank_tab(self,bank_tag_number):
+        """
+        Clicks the bank tag number selected.
+        
+        Args: 
+            bank_tag_number (int): 1-10 
+        """
 
-    
+        bank_tag_layout_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_tag_layout.png")
+        bank_tag_layout = imsearch.search_img_in_rect(bank_tag_layout_image, self.win.game_view) #start 3 pixel from left              
+        
+        tag_width = 35 # Clickable area
+        tag_height = 31 # Height before the tag curve top-right
+        tag_gap = 5 # Dead space between tags
+        tag_number = 10 # Number of possible tags
+
+        x = bank_tag_layout.left + 3  # start 3 pixels to the right of bank_tag_layout
+        y = bank_tag_layout.top  # aligned with the top of bank_tag_layout
+
+        self.bank_tags = []
+        for i in range(tag_number):
+            left = x + i * (tag_width + tag_gap)
+            top = y
+            self.bank_tags.append(Rectangle(left, top, tag_width, tag_height))
+
+        self.mouse.move_to(self.bank_tags[bank_tag_number].random_point(), mouseSpeed=self.mouse_speed)
+        self.mouse.click()
+
+
 
 
 

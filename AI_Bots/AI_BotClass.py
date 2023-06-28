@@ -510,7 +510,25 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
         self.mouse.move_to(self.bank_tags[bank_tag_number].random_point(), mouseSpeed=self.mouse_speed)
         self.mouse.click()
 
+    def bank_rearrange_swap(self):
+        bank_swap_off_img = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_swap_off.png")
+        bank_swap_off = imsearch.search_img_in_rect(bank_swap_off_img, self.win.game_view)
+        if bank_swap_off == None:
+            self.mouse.move_to(bank_swap_off.random_point(), mouseSpeed=self.mouse_speed)
+            self.mouse.click()
 
+    def bank_rearrange_insert(self):
+        bank_insert_off_img = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_insert_off.png")
+        bank_insert_off = imsearch.search_img_in_rect(bank_insert_off_img, self.win.game_view)
+        if bank_insert_off == None:
+            self.mouse.move_to(bank_insert_off.random_point(), mouseSpeed=self.mouse_speed)
+            self.mouse.click()
+
+    def bank_placeholder_on(self):
+        pass
+
+    def bank_placeholder_off(self):
+        pass
 
 
 

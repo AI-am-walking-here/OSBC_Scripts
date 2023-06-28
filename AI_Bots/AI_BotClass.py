@@ -625,6 +625,63 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             self.bank_setup_set = True
             return self.bank_setup_set
 
+    def inv_full_check(self) -> bool:
+        """
+        Checks if inventory is full.
+
+        Returns:
+            True: If inventory is full
+            False: If inventory is not full 
+                
+        """
+        self.log_msg("Checking if 'inv' is full")        
+        for i in range(28):
+            slot_location = self.win.inventory_slots[i]
+            empty_slot_img = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_empty_slot.png")
+            if slot := imsearch.search_img_in_rect(empty_slot_img, slot_location):
+                self.log_msg("Empty slot found 'inv' is not full")
+                return False
+        self.log_msg("No empty slot found, 'inv' is full")
+        return True
+
+    def inv_empty_check(self) -> bool:
+        """
+        Checks if inventory is empty.
+
+        Returns:
+            True: If inventory is empty
+            False: If inventory is not empty 
+                
+        """
+        self.log_msg("Checking if 'inv' is empty")        
+        for i in range(28):
+            slot_location = self.win.inventory_slots[i]
+            empty_slot_img = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_empty_slot.png")
+            slot = imsearch.search_img_in_rect(empty_slot_img, slot_location)
+            if slot == None:
+                self.log_msg("No empty slots found, 'inv' is full")
+                return False
+        self.log_msg("Empty slot found 'inv' is not full")
+        return True
+    
+    def inv_empty_slot_count(self):
+        pass
+
+    def camera_zoom(self):
+        pass
+
+    def camera_angle(self):
+        pass
+
+    def camera_setup(self):
+        pass
+
+    def minimap_zoom(self):
+        #24 clicks to zoom all the way out
+        pass
+
+    def minimap_compass(self):
+        pass
 
 
 

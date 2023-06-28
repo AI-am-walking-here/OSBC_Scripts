@@ -24,8 +24,9 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
         self.pin = "7412" # Must be a string
         self.bank_custom_quantity_set = False
         self.bank_withdraw_as = "item"    
+        self.bank_setup_set = False
 
-    def open_bank(self):
+    def bank_open(self):
         #Clicks Yellopw marker for epen bank
         bank = self.get_nearest_tag(clr.YELLOW)
         
@@ -34,12 +35,12 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             self.mouse.move_to(bank.random_point(), mouseSpeed=self.mouse_speed)
             click_result = self.mouse.click(check_red_click=True)
             if not click_result:
-                self.open_bank()
+                self.bank_open()
                 self.log_msg("Didn't see red click, clicking again...")
         except AttributeError:
             self.log_msg("AttributeError occurred. Retrying click_bank...")
             time.sleep(1)
-            return self.open_bank()
+            return self.bank_open()
         
         while True:
             bank_pin_template_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_pin_template.png")
@@ -50,7 +51,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             if bank_pin_template is None:            
                 bank_pin_template = imsearch.search_img_in_rect(bank_pin_template_image, self.win.game_view)
             else:
-                self.enter_pin()
+                self.bank_pin()
                 break
 
             if bank_tag_layout is None:            
@@ -58,7 +59,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             else:
                 break
         
-    def close_bank(self, close='esc', logs=False,):
+    def bank_close(self, close='esc', logs=False,):
         """
         Leaves the bank menu using 'ESC' key or top-right '[X]'.
 
@@ -91,9 +92,9 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             except AttributeError:
                 self.log_msg("AttributeError occurred. Retrying click_angler_spot...")
                 time.sleep(2)
-                return self.close_bank(close,logs)
+                return self.bank_close(close,logs)
                
-    def enter_pin(self):
+    def bank_pin(self):
         """
         Enters 4-Digit PIN number.
 
@@ -140,7 +141,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             else:
                 break
              
-    def deposit_quantity_set(self, quantity: Union[str, int], x=14):
+    def bank_quantity(self, quantity: Union[str, int], x=14):
         """
         sets custom quantity.
 
@@ -274,7 +275,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
                     self.log_msg(f"Couldn't find image of '{button}' quantity, ending script")
                     raise SystemExit #Gracefully stops the script if pin isnt 4 characters
     
-    def quick_deposit_inv(self):
+    def bank_quick_deposit_inv(self):
         """
         Quickly Deposits inventory by clicking the deposit inventory icon in the bottom right
 
@@ -292,7 +293,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             self.log_msg("AttributeError occurred. can't find Quick Deposit Inventory")
             raise SystemExit #Gracefully stops the script if deposit inventory isnt found
         
-    def quick_deposit_worn(self):
+    def bank_quick_deposit_worn(self):
         """
         Quickly Deposits Worn Items by clicking the deposit worn items icon in the bottom right
         
@@ -310,7 +311,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             self.log_msg("AttributeError occurred. Can't find Quick Deposit Worn Items")
             raise SystemExit #Gracefully stops the script if deposit inventory isnt found
 
-    def withdraw_as_note(self):
+    def bank_withdraw_note(self):
         """
         Clicks the withdraw as note icon to switch from items to notes. Skips if already set to notes
         
@@ -342,7 +343,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
                     self.log_msg("AttributeError occurred. Can't find Bank Note Toggle cutting script")
                     raise SystemExit #Gracefully stops the script if deposit inventory isnt found
         
-    def withdraw_as_item(self):
+    def bank_withdraw_item(self):
         """
         Clicks the withdraw as item icon to switch from notes to items. Skips if already set to items
         
@@ -362,7 +363,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
                 self.log_msg("AttributeError occurred. Can't find Bank item Toggle")
                 raise SystemExit #Gracefully stops the script if deposit inventory isnt found
             
-    def search_bank(self, item: str, set_quantity: Union[str, int] =1, click_times=1, x_value=14,):
+    def bank_search(self, item: str, set_quantity: Union[str, int] =1, click_times=1, x_value=14,):
         """
         Searches bank for desired item, clicks if avaliable. 
         Ability to set custom quantity, number of times to click item, and set custom x quantity value.
@@ -482,12 +483,12 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             self.mouse.click()
             time.sleep(rd.fancy_normal_sample(150,250)/1000)
 
-    def click_bank_tab(self,bank_tag_number):
+    def bank_tab(self,bank_tab_number):
         """
         Clicks the bank tag number selected.
         
         Args: 
-            bank_tag_number (int): 1-10 
+            bank_tab_number (int): 1-10 
         """
 
         bank_tag_layout_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_tag_layout.png")
@@ -507,7 +508,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             top = y
             self.bank_tags.append(Rectangle(left, top, tag_width, tag_height))
 
-        self.mouse.move_to(self.bank_tags[bank_tag_number].random_point(), mouseSpeed=self.mouse_speed)
+        self.mouse.move_to(self.bank_tags[bank_tab_number].random_point(), mouseSpeed=self.mouse_speed)
         self.mouse.click()
 
     def bank_rearrange_swap(self):
@@ -538,6 +539,92 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             self.mouse.move_to(bank_placeholder_on.random_point(), mouseSpeed=self.mouse_speed)
             self.mouse.click()        
         
+    def bank_setup(self,
+                   rearrange_mode="swap",
+                   withdraw="item",
+                   quantity: Union[str,int]="1", x_quantity=14,
+                   placeholder="on") -> bool:
+        """
+        Sets up the intial look at your bank and toggles the desired buttons. Will pass if done before. 
+        
+        Args: 
+            rearrange_mode (str) = "swap" or "insert" --- Toggles the swap 'swap' or 'insert' rearrange buttons
+
+            withdraw (str) = "item" or "note" --- Toggles the item/note withdrawl button
+
+            quantity (str or int) = '1' '5' '10' 'x' 'all' ---- Changes quantity selected
+
+            x_quantity (int) = Changes the custom quantity for 'x'
+
+            placeholder (str) = "on" or "off" ---- Chances is placeholders are set or not
+
+        Returns:
+            self.bank_setup_set = True
+        """
+
+        if self.bank_setup_set is False:
+            # Input pin if screen is up
+            self.log_msg("Bank setup: Inputting Bank Pin")
+            self.bank_pin()
+            self.log_msg(f"Bank setup: Bank Pin set to ****")
+
+            # Rearrange buttons
+            self.log_msg(f"Bank setup: Setting up Rearrange")
+            if rearrange_mode == "swap":
+                self.bank_rearrange_swap()
+                self.log_msg(f"Bank setup: Rearrange set to {rearrange_mode}")
+            elif rearrange_mode == "insert":
+                self.bank_rearrange_insert()
+                self.log_msg(f"Bank setup: Rearrange set to {rearrange_mode}")
+            else:
+                self.log_msg("Rearrange_mode input invalid, check spelling.")
+
+            # Withdraw as buttons
+            self.log_msg(f"Bank setup: Setting up Withdraw")
+            if withdraw == "item":
+                self.bank_withdraw_item()
+                self.log_msg(f"Bank setup: Withdraw set to {withdraw}")
+            elif withdraw == "note":
+                self.bank_withdraw_note()
+                self.log_msg(f"Bank setup: Withdraw set to {withdraw}")
+            else:
+                self.log_msg("Withdraw input invalid, check spelling.")
+
+            # Bank quantity
+            self.log_msg(f"Bank setup: Setting up Quantity")
+            if quantity == "1":
+                self.bank_quantity(quantity)
+                self.log_msg(f"Bank setup: Quantity set to {quantity}")
+            elif quantity == "5":
+                self.bank_quantity(quantity)
+                self.log_msg(f"Bank setup: Quantity set to {quantity}")
+            elif quantity == "10":
+                self.bank_quantity(quantity)
+                self.log_msg(f"Bank setup: Quantity set to {quantity}")
+            elif quantity == "all":
+                self.bank_quantity(quantity)
+                self.log_msg(f"Bank setup: Quantity set to {quantity}")
+            elif quantity == "x":
+                self.bank_quantity(quantity,x=x_quantity)
+                self.log_msg(f"Bank setup: Quantity set to {quantity}, and x set to {x_quantity}")            
+            else:
+                self.log_msg("Quantity input invalid, check spelling.")
+
+            # Placeholders Inserters
+            self.log_msg(f"Bank setup: Setting up Placehoder")
+            if placeholder == "on":
+                self.bank_withdraw_item()
+                self.log_msg(f"Bank setup: Placehoder {placeholder}")
+            elif placeholder == "off":
+                self.bank_withdraw_note()
+                self.log_msg(f"Bank setup: Placehoder {placeholder}")
+            else:
+                self.log_msg("Withdraw input invalid, check spelling.")
+
+            # Setting Class veriable to skip future function calls
+            self.bank_setup_set = True
+            return self.bank_setup_set
+
 
 
 

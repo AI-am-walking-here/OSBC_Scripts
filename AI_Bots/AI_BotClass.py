@@ -513,22 +513,31 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
     def bank_rearrange_swap(self):
         bank_swap_off_img = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_swap_off.png")
         bank_swap_off = imsearch.search_img_in_rect(bank_swap_off_img, self.win.game_view)
-        if bank_swap_off == None:
+        if bank_swap_off != None:
             self.mouse.move_to(bank_swap_off.random_point(), mouseSpeed=self.mouse_speed)
             self.mouse.click()
 
     def bank_rearrange_insert(self):
         bank_insert_off_img = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_insert_off.png")
         bank_insert_off = imsearch.search_img_in_rect(bank_insert_off_img, self.win.game_view)
-        if bank_insert_off == None:
+        if bank_insert_off != None:
             self.mouse.move_to(bank_insert_off.random_point(), mouseSpeed=self.mouse_speed)
             self.mouse.click()
 
     def bank_placeholder_on(self):
-        pass
+        bank_placeholder_off_img = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_placeholder_off.png")
+        bank_placeholder_off = imsearch.search_img_in_rect(bank_placeholder_off_img, self.win.game_view)
+        if bank_placeholder_off != None:
+            self.mouse.move_to(bank_placeholder_off.random_point(), mouseSpeed=self.mouse_speed)
+            self.mouse.click()     
 
     def bank_placeholder_off(self):
-        pass
+        bank_placeholder_on_img = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_placeholder_on.png")
+        bank_placeholder_on = imsearch.search_img_in_rect(bank_placeholder_on_img, self.win.game_view)
+        if bank_placeholder_on != None:
+            self.mouse.move_to(bank_placeholder_on.random_point(), mouseSpeed=self.mouse_speed)
+            self.mouse.click()        
+        
 
 
 

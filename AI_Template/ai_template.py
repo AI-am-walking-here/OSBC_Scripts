@@ -13,11 +13,11 @@ import utilities.ocr as ocr
 import utilities.api.item_ids as ids
 import utilities.color as clr
 import utilities.random_util as rd
-from model.osrs.osrs_bot import OSRSBot
+from model.osrs.AI_Bots.AI_BotClass import AI_BotClass
 
 
 
-class <BotName>(OSRSBot, launcher.Launchable):
+class <BotName> (AI_BotClass, metaclass=ABCMeta):
     def __init__(self):
         #Initialize the bot when some predefined variables, can change some with options
         bot_title = "<Bot Title>"

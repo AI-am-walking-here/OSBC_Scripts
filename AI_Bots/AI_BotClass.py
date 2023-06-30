@@ -12,6 +12,7 @@ from utilities.geometry import Rectangle, Point
 from typing import Union
 
 from model.osrs.osrs_bot import OSRSBot, RuneLiteWindow
+from pynput.mouse import Controller as MouseController    
 import model.osrs.AI_Bots.BotSpecImageSearch as imsearch 
 
 
@@ -697,7 +698,16 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
 
     def minimap_zoom(self):
         #24 clicks to zoom all the way out
-        pass
+
+        minimap = self.win.minimap
+        self.mouse.move_to(minimap.random_point(), mouseSpeed=self.mouse_speed)
+        mouse = MouseController()
+        #Random scroll distance and speed 
+        random_scroll_range = random.randint(30,40)
+        for i in range(random_scroll_range):
+            mouse.scroll(0, -1)
+            random_scroll_speed = random.choice([0.001, 0.002])
+            time.sleep(random_scroll_speed)
 
     def camera_compass(self):
         pass

@@ -692,7 +692,18 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
            
 
     def camera_zoom(self):
-        pass
+        """
+        Zooms the camera out               
+        """
+        self.mouse.move_to(self.win.game_view.random_point(), mouseSpeed=self.mouse_speed)
+        mouse = MouseController()
+        #Random scroll distance and speed 
+        random_scroll_range = random.randint(30,40)
+        for i in range(random_scroll_range):
+            mouse.scroll(0, -1)
+            random_scroll_speed = random.choice([0.001, 0.002])
+            time.sleep(random_scroll_speed)
+
 
     def camera_angle(self):
         pass
@@ -701,13 +712,14 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
         pass
 
     def minimap_zoom(self):
-        #24 clicks to zoom all the way out
-
+        """
+        Zooms the minimap out               
+        """
         minimap = self.win.minimap
         self.mouse.move_to(minimap.random_point(), mouseSpeed=self.mouse_speed)
         mouse = MouseController()
         #Random scroll distance and speed 
-        random_scroll_range = random.randint(30,40)
+        random_scroll_range = random.randint(25,35)
         for i in range(random_scroll_range):
             mouse.scroll(0, -1)
             random_scroll_speed = random.choice([0.001, 0.002])

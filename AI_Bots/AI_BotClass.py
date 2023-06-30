@@ -28,7 +28,11 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
         self.bank_setup_set = False
 
     def bank_open(self):
-        #Clicks Yellopw marker for epen bank
+        """
+        Find the Yellow tagged bank and clicks. With then wait untill bank pin or bank screen shows to exit function
+
+        
+        """
         bank = self.get_nearest_tag(clr.YELLOW)
         
         #Trys to click bank, if the color recognition bot fails it will run the command again    
@@ -65,7 +69,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
         Leaves the bank menu using 'ESC' key or top-right '[X]'.
 
         Args:
-            close: 'esc'/'escape/ or 'click' method of closing the bank (default = 'esc')
+            close: 'esc'/'escape'/ or 'click' method of closing the bank (default = 'esc')
             logs: (T/F) Logs messages throughout the function (default = False)
         
         """
@@ -709,9 +713,49 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             random_scroll_speed = random.choice([0.001, 0.002])
             time.sleep(random_scroll_speed)
 
-    def camera_compass(self):
-        pass
+    def minimap_compass(self, direction="north"):
+        """
+        Clicks tthe minimap compass to face North, East, South, or South
 
+        Kwargs:
+            direction (str): Pick a direction 'north', 'east', 'south' or 'west'. (Default="north")
+
+        """
+        facing = direction.lower() 
+
+        if facing == "north": 
+            self.log_msg("Setting compass North...")
+            self.mouse.move_to(self.win.compass_orb.random_point(), mouseSpeed=self.mouse_speed)
+            self.mouse.click()
+
+        if facing == "east":
+            self.log_msg("Setting compass East...")
+            self.mouse.move_to(self.win.compass_orb.random_point(), mouseSpeed=self.mouse_speed)
+            self.mouse.right_click()
+            self.mouse.move_rel(0, 43, 5, 2)
+            self.mouse.click()
+        
+        if facing == "south":
+            self.log_msg("Setting compass South...")
+            self.mouse.move_to(self.win.compass_orb.random_point(), mouseSpeed=self.mouse_speed)
+            self.mouse.right_click()
+            self.mouse.move_rel(0, 57, 5, 2)
+            self.mouse.click()
+
+        if facing == "west":
+            self.log_msg("Setting compass West...")
+            self.mouse.move_to(self.win.compass_orb.random_point(), mouseSpeed=self.mouse_speed)
+            self.mouse.right_click()
+            self.mouse.move_rel(0, 72, 5, 2)
+            self.mouse.click()
+
+        else:
+            self.log_msg("Incorrect input for minimap_compass() direction, Check Script")
+
+
+       
+    def bank_equip(self):
+        pass
 
 
 

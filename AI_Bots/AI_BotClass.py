@@ -539,6 +539,9 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             self.mouse.move_to(bank_placeholder_on.random_point(), mouseSpeed=self.mouse_speed)
             self.mouse.click()        
         
+
+#### TODO Check below functions
+
     def bank_setup(self,
                    rearrange_mode="swap",
                    withdraw="item",
@@ -664,8 +667,24 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
         self.log_msg("Empty slot found 'inv' is not full")
         return True
     
-    def inv_empty_slot_count(self):
-        pass
+    def inv_empty_slot_count(self) -> int:
+        """
+        Counts the Number of empty spots in an inventory.
+
+        Returns:
+            int = Number of empty slots 
+                
+        """
+        self.log_msg("Checking number of empty slots")
+        empty_slot_count = 0        
+        for i in range(28):
+            slot_location = self.win.inventory_slots[i]
+            empty_slot_img = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_empty_slot.png")
+            if slot := imsearch.search_img_in_rect(empty_slot_img, slot_location):
+                empty_slot_count += 1
+        return empty_slot_count
+                
+           
 
     def camera_zoom(self):
         pass
@@ -680,7 +699,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
         #24 clicks to zoom all the way out
         pass
 
-    def minimap_compass(self):
+    def camera_compass(self):
         pass
 
 

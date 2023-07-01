@@ -9,7 +9,7 @@ import utilities.color as clr
 import utilities.random_util as rd
 import cv2
 from utilities.geometry import Rectangle, Point
-from typing import Union
+from typing import Union, List
 
 from model.osrs.osrs_bot import OSRSBot, RuneLiteWindow
 from pynput.mouse import Controller as MouseController    
@@ -743,10 +743,45 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             else:
                 self.log_msg("No image was found in the inventory")
         
-      
-        
-                           
+    def inv_item_at_slot(self, item, first_instance = True) ->  Union[int, List[int]]:
+        """
+        Checks inventory the the location(s) of an item.
 
+        Args:
+            item(str): 'item name' 
+
+        Kwarg:
+            first_instance(bool): True: if you want the first location or 
+                                            False: if you want a list of all locations
+
+        
+        Returns:
+            (int) = Slot number item is located at
+            (List[int]) = Slot number item(s) is located at
+                
+        """
+
+        self.log_msg("Checking stack count, finding image in inv...")
+        item_formated = item.replace(' ', '_')# Formatting to get item 'str' ready
+        item_name_png = item_formated + "_bank.png"
+        item_name_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images","bank_items", item_name_png) # Item to search for loaded
+
+        if first_instance is True:
+            for i in range(28):                
+                slot_location = self.win.inventory_slots[i]
+                item_name = imsearch.search_img_in_rect(item_name_image, slot_location)
+                if item_name != None:
+                    self.log_msg(f"First item found at slot: {i}")
+                    return i
+                           
+        if first_instance is False:
+            item_location = []
+            for i in range(28):                
+                slot_location = self.win.inventory_slots[i]
+                item_name = imsearch.search_img_in_rect(item_name_image, slot_location)
+                if item_name != None:                    
+                    item_location.append(i)
+            return item_location
 
 
     def camera_angle(self):

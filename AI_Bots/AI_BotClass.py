@@ -688,9 +688,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             if slot := imsearch.search_img_in_rect(empty_slot_img, slot_location):
                 empty_slot_count += 1
         return empty_slot_count
-                
-           
-
+   
     def camera_zoom(self):
         """
         Zooms the camera out               
@@ -703,6 +701,52 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             mouse.scroll(0, -1)
             random_scroll_speed = random.choice([0.001, 0.002])
             time.sleep(random_scroll_speed)
+
+#TODO added so bullet proofing for no matches or 0 stack counts(test latter)
+    def inv_stack_count(self, slot: Union[str, int]) -> int:
+        """
+        Checks inventory at specified slot or image what the stack counter is at.
+
+        Args:
+            slot(str): 'item name' 
+                  (int): slot number to check starting top-left
+        
+        Returns:
+            (int) = Number of items in a stack
+                
+        """
+
+        
+        if slot is int:
+            self.log_msg(f"Checking stack count at slot: {slot}")
+            count_extracted = ocr.extract_text(self.win.inventory_slots[slot],ocr.PLAIN_11,clr.YELLOW) #OCR getting the Number in a stack
+            cleaned_count = int(count_extracted.replace('O', '').replace('o', '')) #Fixing OCRs mistakes with 0s/Os
+            formatted_count = f"{cleaned_count:,}" 
+            self.log_msg(f"You have {formatted_count} items at slot: {slot}")
+            return cleaned_count 
+
+        if slot is str:
+            self.log_msg("Checking stack count, finding image in inv...")
+            item_formated = slot.replace(' ', '_')# Formatting to get item 'str' ready
+            item_name_png = item_formated + "_bank.png"
+            item_name_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images","bank_items", item_name_png) # Item to search for loaded
+            # Search inv for item 
+            for i in range(28):                
+                slot_location = self.win.inventory_slots[i]
+                item_name = imsearch.search_img_in_rect(item_name_image, slot_location)
+                if item_name != None:
+                    count_extracted = ocr.extract_text(self.win.inventory_slots[i],ocr.PLAIN_11,clr.YELLOW) #OCR getting the Number in a stack
+                    cleaned_count = int(count_extracted.replace('O', '').replace('o', '')) #Fixing OCRs mistakes with 0s/Os
+                    formatted_count = f"{cleaned_count:,}" 
+                    self.log_msg(f"You have {formatted_count} items at slot: {slot}")
+                    return cleaned_count 
+            else:
+                self.log_msg("No image was found in the inventory")
+        
+      
+        
+                           
+
 
 
     def camera_angle(self):

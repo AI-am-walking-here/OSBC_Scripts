@@ -801,11 +801,11 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
         item_name_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images","bank_items", item_name_png) # Item to search for loaded
         item_counter = 0
         for i in range(28):                
-        slot_location = self.win.inventory_slots[i]
-        item_name = imsearch.search_img_in_rect(item_name_image, slot_location)
-        if item_name != None:
-            item_counter += 1
-            return item_counter
+            slot_location = self.win.inventory_slots[i]
+            item_name = imsearch.search_img_in_rect(item_name_image, slot_location)
+            if item_name != None:
+                item_counter += 1
+                return item_counter
 
     def camera_angle(self):
         pass
@@ -868,8 +868,25 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
 
 
        
-    def bank_equip(self):
-        pass
+    def bank_equip(self, item):
+        # Menu Entry Swapper - set UI Swaps -> Bank Deposit -> Eat/Wield/Ect
+        pag.keyDown('shift')
+        self.log_msg("Holding Shift and looking for item")
+        item_formated = item.replace(' ', '_')# Formatting to get item 'str' ready
+        item_name_png = item_formated + "_bank.png"
+        item_name_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images","bank_items", item_name_png) # Item to search for loaded
+        for i in range(28):             
+            slot_location = self.win.inventory_slots[i]
+            item_name = imsearch.search_img_in_rect(item_name_image, slot_location)
+            if item_name != None:
+                self.log_msg(f"Shift clicking {item}")
+                self.mouse.move_to(item_name.random_point(), mouseSpeed=self.mouse_speed)
+                self.mouse.click()
+                pag.keyUp('shift')
+                return
+        # If item isn't found
+        pag.keyUp('shift')
+        self.log_msg("Couldn't find item, moving on....")    
 
 
 

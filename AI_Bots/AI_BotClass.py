@@ -761,7 +761,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
                 
         """
 
-        self.log_msg("Checking stack count, finding image in inv...")
+        self.log_msg("Checking inventory for item...")
         item_formated = item.replace(' ', '_')# Formatting to get item 'str' ready
         item_name_png = item_formated + "_bank.png"
         item_name_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images","bank_items", item_name_png) # Item to search for loaded
@@ -783,6 +783,29 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
                     item_location.append(i)
             return item_location
 
+    def inv_item_count(self, item) -> int:
+        """
+        Checks inventory the the location(s) of an item.
+
+        Args:
+            item(str): 'item name' 
+        
+        Returns:
+            (int) = Number of items in inventory
+
+                
+        """
+        self.log_msg("Checking inventory for item...")
+        item_formated = item.replace(' ', '_')# Formatting to get item 'str' ready
+        item_name_png = item_formated + "_bank.png"
+        item_name_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images","bank_items", item_name_png) # Item to search for loaded
+        item_counter = 0
+        for i in range(28):                
+        slot_location = self.win.inventory_slots[i]
+        item_name = imsearch.search_img_in_rect(item_name_image, slot_location)
+        if item_name != None:
+            item_counter += 1
+            return item_counter
 
     def camera_angle(self):
         pass

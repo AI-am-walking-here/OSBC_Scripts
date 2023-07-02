@@ -865,8 +865,6 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
 
         else:
             self.log_msg("Incorrect input for minimap_compass() direction, Check Script")
-
-
        
     def bank_equip(self, item):
         # Menu Entry Swapper - set UI Swaps -> Bank Deposit -> Eat/Wield/Ect
@@ -887,6 +885,31 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
         # If item isn't found
         pag.keyUp('shift')
         self.log_msg("Couldn't find item, moving on....")    
+
+    def inv_click_all(self,path=1): 
+        """
+        Click allinventory slots
+
+        Kwargs:
+            path(int): 1 - Down-Up S path (Default)
+
+                            2 - Right-Left S path
+
+                            3 - Zig Zag path
+        """
+        # Define inventory slot indices in custom "S" motion, top to bottom and then bottom to top
+        if path == 1: #down_up_s
+            slots = [0, 4, 8, 12, 16, 20, 24, 25, 21, 17, 13, 9, 5, 1, 2, 6, 10, 14, 18, 22, 26, 27, 23, 19, 15, 11, 7, 3]
+        
+        if path == 2: #right_left_s
+            slots = [0, 1, 2, 3, 7, 6, 5, 4, 8, 9, 10, 11, 15, 14, 13, 12, 16, 17, 18, 19, 20, 21, 22, 23, 27, 26, 25, 24]
+
+        if path == 3: #zig_zag
+            slots = [0, 1, 4, 5, 8, 9, 12, 13 ,16, 17, 20, 21, 24, 25, 2, 3, 6, 7, 10, 11, 14, 15, 18, 19, 22, 23, 26, 27]
+
+        for slot in slots:
+            self.mouse.move_to(self.win.inventory_slots[slot].random_point(), mouseSpeed=self.mouse_speed)
+            self.mouse.click()
 
 
 

@@ -26,7 +26,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
         self.bank_custom_quantity_set = False
         self.bank_withdraw_as = "item"    
         self.bank_setup_set = False
-        self.inv_craft_set = False
+
 
     def bank_open(self):
         """
@@ -916,7 +916,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             self.mouse.move_to(self.win.inventory_slots[slot].random_point(), mouseSpeed=self.mouse_speed)
             self.mouse.click()
 
-    def inv_craft(self, item1, item2, craft='all', craft_option=1, x=14):
+    def inv_craft(self, item1:str, item2:str, craft: Union[str,int]='all', craft_option=1, x=14):
         """
         Sets up a craft with desired items in inventory
 
@@ -925,8 +925,8 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             item2(str): 'item name'
                     
         Kwargs:
-            craft(str/int): Custom craft quantity set 1, 5, 'all', 'x'
-            craft_option(int): when combine items, select the number in the row used to craft, starting from 1
+            craft(str/int): (Default = 'all') Custom craft quantity set 1, 5, 'all', 'x'
+            craft_option(int): when combine items, select the number in the row used to craft starting from 1
             x(int): Custom craft quantity when choosing 'x' craft
                     
         """
@@ -936,19 +936,65 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
         item_name1_png = item1_formated + "_bank.png"
         item_name1_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images","bank_items", item_name1_png)
         item_name1 = imsearch.search_img_in_rect(item_name1_image, self.win.control_panel)
+        if item_name1 is None:
+            self.log_msg(f"Couldn't find item1, cutting script")
+            raise SystemExit #Gracefully stops the script if item isn't found  
 
         # Item2 image load
         item2_formated = item2.replace(' ', '_')
         item_name2_png = item2_formated + "_bank.png"
         item_name2_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images","bank_items", item_name2_png)
         item_name2 = imsearch.search_img_in_rect(item_name2_image, self.win.control_panel)
-
+        if item_name2 is None:
+            self.log_msg(f"Couldn't find item2, cutting script")
+            raise SystemExit #Gracefully stops the script if item isn't found  
+        
         # Craft buttons image load
         craft_1_off_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", craft_1_off.png)
         craft_5_off_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", craft_5_off.png)
         craft_all_off_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", craft_all_off.png)
         craft_on_border_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", craft_on_border.png)
         craft_x_off_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", craft_x_off.png)
+
+        # Click both items to start craft
+        self.mouse.move_to(item_name1.random_point(), mouseSpeed=self.mouse_speed)
+        self.mouse.click()
+        self.mouse.move_to(item_name2.random_point(), mouseSpeed=self.mouse_speed)
+        self.mouse.click()
+
+        # Wait for craft screen to appear by searching for buttons
+        craft_1 = imsearch.search_img_in_rect(craft_1_off_image, self.win.chat)
+        craft_5 = imsearch.search_img_in_rect(craft_5_off_image, self.win.chat) # Needs both because one can start 'on'
+        while craft_1 and craft_5 is None:
+            craft_1 = imsearch.search_img_in_rect(craft_1_off_image, self.win.chat)
+            craft_5 = imsearch.search_img_in_rect(craft_5_off_image, self.win.chat)
+
+        # Based on choise click the craft quantity
+        if craft == '1':
+            craft_1 = imsearch.search_img_in_rect(craft_1_off_image, self.win.chat)
+            if craft_1 != None:
+                self.mouse.move_to(craft_1.random_point(), mouseSpeed=self.mouse_speed)
+                self.mouse.click()
+        if craft == '5':
+            craft_5 = imsearch.search_img_in_rect(craft_5_off_image, self.win.chat)
+            if craft_5 != None:
+                self.mouse.move_to(craft_5.random_point(), mouseSpeed=self.mouse_speed)
+                self.mouse.click()
+        if craft == 'x':
+            craft_x = imsearch.search_img_in_rect(craft_x_off_image, self.win.chat)
+            if craft_x != None:
+                self.mouse.move_to(craft_x.random_point(), mouseSpeed=self.mouse_speed)
+                self.mouse.click()
+        if craft == 'all':
+            craft_all = imsearch.search_img_in_rect(craft_all_off_image, self.win.chat)
+            if craft_all != None:
+                self.mouse.move_to(craft_all.random_point(), mouseSpeed=self.mouse_speed)
+                self.mouse.click()
+
+
+
+
+
 
 # x texts is PLAIN_11
 

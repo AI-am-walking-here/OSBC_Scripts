@@ -969,7 +969,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             craft_1 = imsearch.search_img_in_rect(craft_1_off_image, self.win.chat)
             craft_5 = imsearch.search_img_in_rect(craft_5_off_image, self.win.chat)
 
-        # Based on choise click the craft quantity
+        # Based on choice click the craft quantity
         if craft == '1':
             craft_1 = imsearch.search_img_in_rect(craft_1_off_image, self.win.chat)
             if craft_1 != None:
@@ -985,6 +985,19 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             if craft_x != None:
                 self.mouse.move_to(craft_x.random_point(), mouseSpeed=self.mouse_speed)
                 self.mouse.click()
+                enter_amount_text = ocr.find_text("Enter amount",self.win.chat,ocr.BOLD_12,clr.BLACK)
+                # Wait for enter_amount_text to appear then start typing
+                while enter_amount_text == []:
+                    enter_amount_text = ocr.find_text("Enter amount",self.win.chat,ocr.BOLD_12,clr.BLACK)
+                time.sleep(rd.fancy_normal_sample(300,600)/1000) # Natural mental processing speed break before typing
+                for digit in str(x): # Presses the custom quantity with natural presses
+                    key = 'num' + digit          
+                    pag.keyDown(key)
+                    time.sleep(rd.fancy_normal_sample(90,150)/1000) # Key down time
+                    pag.keyUp(key)
+                    time.sleep(rd.fancy_normal_sample(90,150)/1000) # Time Between clicks
+                time.sleep(rd.fancy_normal_sample(300,600)/1000) # Time to let craft load
+
         if craft == 'all':
             craft_all = imsearch.search_img_in_rect(craft_all_off_image, self.win.chat)
             if craft_all != None:
@@ -992,6 +1005,14 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
                 self.mouse.click()
 
 
+        #Typing the chosen crafting recipie
+        formated_craft_option = str(craft_option).lower
+        for digit in formated_craft_option: # Presses the custom quantity with natural presses
+            key = 'num' + digit          
+            pag.keyDown(key)
+            time.sleep(rd.fancy_normal_sample(90,150)/1000) # Key down time
+            pag.keyUp(key)
+            time.sleep(rd.fancy_normal_sample(90,150)/1000) # Time Between clicks
 
 
 

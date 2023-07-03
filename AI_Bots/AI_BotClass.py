@@ -26,6 +26,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
         self.bank_custom_quantity_set = False
         self.bank_withdraw_as = "item"    
         self.bank_setup_set = False
+        self.inv_craft_set = False
 
     def bank_open(self):
         """
@@ -867,6 +868,10 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             self.log_msg("Incorrect input for minimap_compass() direction, Check Script")
        
     def bank_equip(self, item):
+        """
+        Shift clicks items in the inventory, while using the bank
+        """
+ 
         # Menu Entry Swapper - set UI Swaps -> Bank Deposit -> Eat/Wield/Ect
         pag.keyDown('shift')
         self.log_msg("Holding Shift and looking for item")
@@ -888,7 +893,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
 
     def inv_click_all(self,path=1): 
         """
-        Click allinventory slots
+        Click all inventory slots
 
         Kwargs:
             path(int): 1 - Down-Up S path (Default)
@@ -911,12 +916,41 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             self.mouse.move_to(self.win.inventory_slots[slot].random_point(), mouseSpeed=self.mouse_speed)
             self.mouse.click()
 
+    def inv_craft(self, item1, item2, craft='all', craft_option=1, x=14):
+        """
+        Sets up a craft with desired items in inventory
 
+        Args:
+            item1(str): 'item name'\n
+            item2(str): 'item name'
+                    
+        Kwargs:
+            craft(str/int): Custom craft quantity set 1, 5, 'all', 'x'
+            craft_option(int): when combine items, select the number in the row used to craft, starting from 1
+            x(int): Custom craft quantity when choosing 'x' craft
+                    
+        """
 
+        # Item1 image load
+        item1_formated = item1.replace(' ', '_')
+        item_name1_png = item1_formated + "_bank.png"
+        item_name1_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images","bank_items", item_name1_png)
+        item_name1 = imsearch.search_img_in_rect(item_name1_image, self.win.control_panel)
 
+        # Item2 image load
+        item2_formated = item2.replace(' ', '_')
+        item_name2_png = item2_formated + "_bank.png"
+        item_name2_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images","bank_items", item_name2_png)
+        item_name2 = imsearch.search_img_in_rect(item_name2_image, self.win.control_panel)
 
+        # Craft buttons image load
+        craft_1_off_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", craft_1_off.png)
+        craft_5_off_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", craft_5_off.png)
+        craft_all_off_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", craft_all_off.png)
+        craft_on_border_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", craft_on_border.png)
+        craft_x_off_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", craft_x_off.png)
 
-
+# x texts is PLAIN_11
 
 
         

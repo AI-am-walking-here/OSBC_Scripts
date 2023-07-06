@@ -518,6 +518,9 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
         self.mouse.click()
 
     def bank_rearrange_swap(self):
+        """
+        Toggles the bank rearrange option to swap
+        """
         bank_swap_off_img = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_swap_off.png")
         bank_swap_off = imsearch.search_img_in_rect(bank_swap_off_img, self.win.game_view)
         if bank_swap_off != None:
@@ -525,6 +528,9 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             self.mouse.click()
 
     def bank_rearrange_insert(self):
+        """
+        Toggles the bank rearrange option to insert
+        """
         bank_insert_off_img = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_insert_off.png")
         bank_insert_off = imsearch.search_img_in_rect(bank_insert_off_img, self.win.game_view)
         if bank_insert_off != None:
@@ -532,6 +538,9 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             self.mouse.click()
 
     def bank_placeholder_on(self):
+        """
+        Toggles the bank placeholder option to on
+        """
         bank_placeholder_off_img = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_placeholder_off.png")
         bank_placeholder_off = imsearch.search_img_in_rect(bank_placeholder_off_img, self.win.game_view)
         if bank_placeholder_off != None:
@@ -539,11 +548,15 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             self.mouse.click()     
 
     def bank_placeholder_off(self):
+        """
+        Toggles the bank placeholder option to off
+        """
         bank_placeholder_on_img = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", "bank_placeholder_on.png")
         bank_placeholder_on = imsearch.search_img_in_rect(bank_placeholder_on_img, self.win.game_view)
         if bank_placeholder_on != None:
             self.mouse.move_to(bank_placeholder_on.random_point(), mouseSpeed=self.mouse_speed)
             self.mouse.click()        
+        
         
 
 #### TODO Check below functions
@@ -952,6 +965,7 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
         # Craft buttons image load
         craft_1_off_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", craft_1_off.png)
         craft_5_off_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", craft_5_off.png)
+        craft_10_off_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", craft_10_off.png)
         craft_all_off_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", craft_all_off.png)
         craft_on_border_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", craft_on_border.png)
         craft_x_off_image = imsearch.BOT_IMAGES.joinpath("AI_BotClass_Images", craft_x_off.png)
@@ -980,6 +994,11 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             if craft_5 != None:
                 self.mouse.move_to(craft_5.random_point(), mouseSpeed=self.mouse_speed)
                 self.mouse.click()
+        if craft == '10':
+        craft_10 = imsearch.search_img_in_rect(craft_10_off_image, self.win.chat)
+        if craft_10 != None:
+            self.mouse.move_to(craft_10.random_point(), mouseSpeed=self.mouse_speed)
+            self.mouse.click()
         if craft == 'x':
             craft_x = imsearch.search_img_in_rect(craft_x_off_image, self.win.chat)
             if craft_x != None:
@@ -1014,8 +1033,13 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             pag.keyUp(key)
             time.sleep(rd.fancy_normal_sample(90,150)/1000) # Time Between clicks
 
+    def quick_hop(self):
+        pass
 
 
+# TODO make sure tp all box on option, make sure to add image for 10 button, 
+# make sure to think though the code anagina and think of bugs
+# add a way to skip clicking x if it clicked  already using ocr
 
 # x texts is PLAIN_11
 

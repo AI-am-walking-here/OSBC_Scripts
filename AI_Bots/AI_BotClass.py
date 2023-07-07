@@ -11,6 +11,7 @@ import cv2
 from utilities.geometry import Rectangle, Point
 from typing import Union, List
 
+from pynput.keyboard import Controller as KeyboardController, Key
 from model.osrs.osrs_bot import OSRSBot, RuneLiteWindow
 from pynput.mouse import Controller as MouseController    
 import model.osrs.AI_Bots.BotSpecImageSearch as imsearch 
@@ -1034,7 +1035,21 @@ class AI_BotClass(OSRSBot, metaclass=ABCMeta):
             time.sleep(rd.fancy_normal_sample(90,150)/1000) # Time Between clicks
 
     def quick_hop(self):
-        pass
+        # Presses hotkey for Quick-hop previous
+        keyboard = KeyboardController()
+
+        # Define the hotkey combination
+        hotkey_combination = [Key.ctrl_l, Key.shift, Key.left]
+
+        # Simulate the hotkey combination
+        for key in hotkey_combination:
+            keyboard.press(key)
+
+        time.sleep(random.randint(500, 1000) / 1000)
+
+        # Release the keys in reverse order
+        for key in reversed(hotkey_combination):
+            keyboard.release(key)
 
 
 # TODO make sure tp all box on option, make sure to add image for 10 button, 
